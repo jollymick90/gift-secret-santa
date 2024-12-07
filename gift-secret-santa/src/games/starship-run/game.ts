@@ -1,11 +1,11 @@
 import * as THREE from 'three';
-
 import { Character } from './character';
 import { Colors } from './constant';
-import { Tree } from './three';
+import { Tree } from './tree';
 import { createBox } from './ui-utils';
 
-export class World {
+
+export class Game {
     element: any;
     scene: any;
     camera: any;
@@ -13,7 +13,7 @@ export class World {
     renderer: any;
     light: any;
     objects: any;
-    paused: any;
+    paused: boolean = false;
     keysAllowed: any;
     score: any;
     difficulty: any;
@@ -105,10 +105,11 @@ export class World {
 		// 	}
 		// );
 
-        // Begin the rendering loop.
-		this.loop();
     }
 
+	init() {
+		this.loop();
+	}
     
 	/**
 	  * The main animation loop.
@@ -245,7 +246,7 @@ export class World {
 
 		// Render the page and repeat.
 		this.renderer.render(this.scene, this.camera);
-		requestAnimationFrame(this.loop);
+		requestAnimationFrame(this.loop.bind(this));
 	}
 
 	/**

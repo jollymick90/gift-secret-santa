@@ -1,14 +1,68 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Vite + TS</title>
-  </head>
-  <body>
-    <div id="app"></div>
-    <div id="world"></div>
-    <script type="module" src="/src/main.ts"></script>
-  </body>
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vite + TS</title>
+  <!-- <script type="text/javascript" src="/assets/js/three.min.js"></script> -->
+</head>
+
+<body>
+  <div class="container">
+    <!-- Header -->
+    <header class="header">
+      <h1 class="app-name">Game App</h1>
+      <div class="messages">
+        <p>Benvenuto nel gioco!</p>
+      </div>
+      <div class="stat">
+        <label>Score</label>
+        <p id="score">0</p>
+        <div class="animate-flicker" id="variable-content">Press any button to begin</div>
+      </div>
+    </header>
+
+    <!-- Main Game Area -->
+    <main class="game-area">
+
+      <div id="arcade-area" class="game-screen world">
+        <h1>scegli il gioco</h1>
+
+      </div>
+      <div id="world" class="game-screen world hidden">
+
+      </div>
+    </main>
+    <footer class="footer">
+
+      <div class="controls">
+        <div id="home-controls">
+          <button id="gameOne" class="control-button">Gioco 1</button>
+        </div>
+        <div id="game-controls" class="hidden">
+          <button id="btnLeft" class="control-button">⬅️</button>
+          <button id="btnUp" class="control-button">⬆️</button>
+          <button id="btnRight" class="control-button">➡️</button>
+          <button id="btnDown" class="control-button">⬇️</button>
+          <button id="btnStop" class="control-button">⏺️</button>
+        </div>
+      </div>
+    </footer>
+  </div>
+  <!-- <div class="app-container">
+    <div id="app" class="app">
+      <div class="card" >
+        <button id="start-game" type="button">Start</button>
+      </div>
+    </div>
+    <div id="world" class="world"></div>
+    <div id="control" class="control">
+      
+    </div>
+  </div> -->
+  <script type="module" src="/src/main.ts"></script>
+</body>
+
 </html>
