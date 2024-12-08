@@ -1,5 +1,6 @@
 import { World } from "../games/boxy-run/boxy-run-original";
 import { DoughnutStars } from "../games/doughnut-stars/doughut-stars";
+import { MazeBrain } from "../games/maze-brain/maze-brain";
 import { Game } from "../games/starship-run/game";
 
 let game: Game | null = null;
@@ -66,6 +67,14 @@ export function runArcadeControl() {
         arcadeArea?.classList.add('hidden');
         gameSpace?.classList.add('hidden');
         gameDoughut?.classList.add('hidden');
+
+  
+        const worldSpacerun = document.getElementById('maze');
+        if (worldSpacerun) {
+            console.log("run ")
+            const doughnutGame = MazeBrain(worldSpacerun);
+            doughnutGame.start();
+        }
 
     }
 
