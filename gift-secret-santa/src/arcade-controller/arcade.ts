@@ -1,5 +1,7 @@
 import { World } from "../games/boxy-run/boxy-run-original";
+import { Game } from "../games/starship-run/game";
 
+let game: Game | null = null;
 export function runArcadeControl() {
     const arcadeArea = document.getElementById('arcade-area');
     const gameOneButton = document?.getElementById('gameOne');
@@ -29,6 +31,20 @@ export function runArcadeControl() {
     
                 gameTwo?.classList.remove('hidden');
                 arcadeArea?.classList.add('hidden');
+                const worldSpacerun = document.getElementById('spacerun');
+                const btnLeft = document.getElementById('btnLeft');
+                const rightLeft = document.getElementById('btnRight');
+                if (worldSpacerun) {
+                    game = new Game(worldSpacerun);
+                    game.init();
+                    game.setOnPause(() => {})
+                    game.setOnResume(() => {})
+                    game.setOnCollisionDetected((score: number) => {})
+                    game.setOnScoreChanged((score: number) => {})
+                    btnLeft?.addEventListener('click', game.clickLeft.bind(game));
+                    rightLeft?.addEventListener('click', game.clickRight.bind(game));
+    
+                }
                 
             })
     
