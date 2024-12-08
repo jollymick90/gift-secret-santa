@@ -21,13 +21,13 @@ import * as THREE from 'three';
  *
  */
 function sinusoid(frequency: number, minimum: number, maximum: number, phase: number, time: number) {
-	var amplitude = 0.5 * (maximum - minimum);
-	var angularFrequency = 2 * Math.PI * frequency;
-	var phaseRadians = phase * Math.PI / 180;
-	var offset = amplitude * Math.sin(
-		angularFrequency * time + phaseRadians);
-	var average = (minimum + maximum) / 2;
-	return average + offset;
+    const amplitude = 0.5 * (maximum - minimum);
+    const angularFrequency = 2 * Math.PI * frequency;
+    const phaseRadians = phase * Math.PI / 180;
+    const offset = amplitude * Math.sin(
+        angularFrequency * time + phaseRadians);
+    const average = (minimum + maximum) / 2;
+    return average + offset;
 }
 
 /**
@@ -40,9 +40,9 @@ function sinusoid(frequency: number, minimum: number, maximum: number, phase: nu
  *
  */
 function createGroup(x: number, y: number, z: number) {
-	var group = new THREE.Group();
-	group.position.set(x, y, z);
-	return group;
+    const group = new THREE.Group();
+    group.position.set(x, y, z);
+    return group;
 }
 
 /**
@@ -60,12 +60,12 @@ function createGroup(x: number, y: number, z: number) {
  *
  */
 function createBox(dx: number, dy: number, dz: number, color: any, x: number, y: number, z: number, notFlatShading?: boolean) {
-    var geom = new THREE.BoxGeometry(dx, dy, dz);
-    var mat = new THREE.MeshPhongMaterial({
-		color:color, 
-    	flatShading: notFlatShading != true
+    const geom = new THREE.BoxGeometry(dx, dy, dz);
+    const mat = new THREE.MeshPhongMaterial({
+        color: color,
+        flatShading: notFlatShading != true
     });
-    var box = new THREE.Mesh(geom, mat);
+    const box = new THREE.Mesh(geom, mat);
     box.castShadow = true;
     box.receiveShadow = true;
     box.position.set(x, y, z);
@@ -87,15 +87,15 @@ function createBox(dx: number, dy: number, dz: number, color: any, x: number, y:
  * @param {number} Z The z-coordinate of the center of the cylinder.
  * @return {THREE.Mesh} A box with the specified properties.
  */
-function createCylinder(radiusTop, radiusBottom, height, radialSegments, 
-						color, x, y, z) {
-    var geom = new THREE.CylinderGeometry(
-    	radiusTop, radiusBottom, height, radialSegments);
-    var mat = new THREE.MeshPhongMaterial({
-    	color: color,
-    	flatShading: true
+function createCylinder(radiusTop, radiusBottom, height, radialSegments,
+    color, x, y, z) {
+    const geom = new THREE.CylinderGeometry(
+        radiusTop, radiusBottom, height, radialSegments);
+    const mat = new THREE.MeshPhongMaterial({
+        color: color,
+        flatShading: true
     });
-    var cylinder = new THREE.Mesh(geom, mat);
+    const cylinder = new THREE.Mesh(geom, mat);
     cylinder.castShadow = true;
     cylinder.receiveShadow = true;
     cylinder.position.set(x, y, z);

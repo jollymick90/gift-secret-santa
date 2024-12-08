@@ -11,6 +11,7 @@ export const Colors = {
 	sand: 0xc2b280,
 	brownDark: 0x23190f,
 	green: 0x669900,
+	grayDark: 0x696969
 };
 
 export const deg2Rad = Math.PI / 180;

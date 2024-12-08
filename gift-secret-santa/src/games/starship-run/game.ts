@@ -3,15 +3,23 @@ import { Character } from './character';
 import { Colors } from './constant';
 import { Tree } from './tree';
 import { createBox } from './ui-utils';
+import { GameObject } from './game.model';
+import { Asteroid } from './asteroid';
 
 // Start receiving feedback from the player.
 const left = 37;
 const up = 38;
 const right = 39;
 const p = 80;
+const disableObstacle = false;
 
+type RowOfTreeProp = {
+	position: number;
+	probability: number;
+	minScale: number;
+	maxScale: number;
+}
 export class Game {
-
 
 	element: any;
 	scene: any;
@@ -19,7 +27,7 @@ export class Game {
 	character: any;
 	renderer: any;
 	light: any;
-	objects: any;
+	objects: GameObject[] = [];
 	paused: boolean = false;
 	keysAllowed: { [key: string]: boolean } = {};
 	score: any;
@@ -83,9 +91,7 @@ export class Game {
 		this.objects = [];
 		this.treePresenceProb = 0.2;
 		this.maxTreeSize = 0.5;
-		for (let i = 10; i < 40; i++) {
-			this.createRowOfTrees(i * -3000, this.treePresenceProb, 0.5, this.maxTreeSize);
-		}
+		this.createInitialCollisionObject()
 
 		// The game is paused to begin with and the game is not over.
 		this.gameOver = false;
@@ -128,10 +134,13 @@ export class Game {
 	}
 
 	keyUp = (e: KeyboardEvent) => {
+		console.log("keyUp",e.keyCode)
 		this.keysAllowed[e.keyCode] = true;
 	}
 
 	onFocus = () => {
+		console.log("onFocus")
+
 		this.keysAllowed = {};
 	}
 
@@ -148,7 +157,8 @@ export class Game {
 		if (!this.paused) {
 
 			// Add more trees and increase the difficulty.
-			if ((this.objects[this.objects.length - 1].mesh.position.z) % 3000 == 0) {
+			const meshPositionCondition = this.objects.length > 0 && ((this.objects[this.objects.length - 1].mesh.position.z) % 3000 === 0);
+			if (meshPositionCondition) {
 				this.difficulty += 1;
 				const levelLength = 30;
 				if (this.difficulty % levelLength == 0) {
@@ -188,7 +198,12 @@ export class Game {
 				} else if (this.difficulty >= 8 * levelLength && this.difficulty < 9 * levelLength) {
 					this.fogDistance -= (5000 / levelLength);
 				}
-				this.createRowOfTrees(-120000, this.treePresenceProb, 0.5, this.maxTreeSize);
+				this.createRowOfAsteroid({
+					position: -120000, 
+					probability: this.treePresenceProb, 
+					minScale: 0.5, 
+					maxScale: this.maxTreeSize
+				});
 				this.scene.fog.far = this.fogDistance;
 			}
 
@@ -223,6 +238,19 @@ export class Game {
 		requestAnimationFrame(this.loop.bind(this));
 	}
 
+	private createInitialCollisionObject() {
+		for (let i = 10; i < 40; i++) {
+			this.createRowOfAsteroid({
+				position: i * -3000,
+				probability: this.treePresenceProb,
+				minScale: 0.5,
+				maxScale: this.maxTreeSize
+			});
+		}
+
+
+	}
+
 	/**
 	  * A method called when window is resized.
 	  */
@@ -243,12 +271,46 @@ export class Game {
 	   * @param {number} MAXSCALE The maximum size of the trees.
 	   *
 	 */
-	createRowOfTrees(position, probability, minScale, maxScale) {
-		for (var lane = -1; lane < 2; lane++) {
-			var randomNumber = Math.random();
+	createRowOfTrees(
+		prop: RowOfTreeProp
+	) {
+		const { 
+			position,
+			probability,
+			minScale,
+			maxScale 
+		} = prop;
+		if (disableObstacle) {
+			return;
+		}
+		for (let lane = -1; lane < 2; lane++) {
+			const randomNumber = Math.random();
 			if (randomNumber < probability) {
 				const scale = minScale + (maxScale - minScale) * Math.random();
 				const tree = new Tree(lane * 800, -400, position, scale);
+				this.objects.push(tree);
+				this.scene.add(tree.mesh);
+			}
+		}
+	}
+
+	createRowOfAsteroid(	
+		prop: RowOfTreeProp
+	) {
+		const { 
+			position,
+			probability,
+			minScale,
+			maxScale 
+		} = prop;
+		if (disableObstacle) {
+			return;
+		}
+		for (let lane = -1; lane < 2; lane++) {
+			const randomNumber = Math.random();
+			if (randomNumber < probability) {
+				const scale = minScale + (maxScale - minScale) * Math.random();
+				const tree = new Asteroid(lane * 800, -400, position, scale);
 				this.objects.push(tree);
 				this.scene.add(tree.mesh);
 			}
@@ -260,13 +322,13 @@ export class Game {
 	 * an object on the map.
 	 */
 	collisionsDetected() {
-		var charMinX = this.character.element.position.x - 115;
-		var charMaxX = this.character.element.position.x + 115;
-		var charMinY = this.character.element.position.y - 310;
-		var charMaxY = this.character.element.position.y + 320;
-		var charMinZ = this.character.element.position.z - 40;
-		var charMaxZ = this.character.element.position.z + 40;
-		for (var i = 0; i < this.objects.length; i++) {
+		const charMinX = this.character.element.position.x - 115;
+		const charMaxX = this.character.element.position.x + 115;
+		const charMinY = this.character.element.position.y - 310;
+		const charMaxY = this.character.element.position.y + 320;
+		const charMinZ = this.character.element.position.z - 40;
+		const charMaxZ = this.character.element.position.z + 40;
+		for (let i = 0; i < this.objects.length; i++) {
 			if (this.objects[i].collides(charMinX, charMaxX, charMinY,
 				charMaxY, charMinZ, charMaxZ)) {
 				return true;
@@ -276,6 +338,7 @@ export class Game {
 	}
 
 	onKeyDown = (e: KeyboardEvent) => {
+		console.log("onKeyDownPressed",e)
 		const key = e.keyCode;
 		this.handleKeyPress(key);
 	}
@@ -295,8 +358,8 @@ export class Game {
 		if (this.gameOver) {
 			return;
 		}
-		if (this.keysAllowed[key] === false) return;
-		this.keysAllowed[key] = false;
+		// if (this.keysAllowed[key] === false) return;
+		// this.keysAllowed[key] = false;
 		if (this.paused && !this.collisionsDetected() && key > 18) {
 			this.paused = false;
 			this.character.onUnpause();

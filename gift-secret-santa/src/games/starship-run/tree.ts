@@ -2,25 +2,26 @@ import * as THREE from 'three';
 
 import { Colors } from './constant';
 import { createCylinder } from './ui-utils';
+import { GameObject } from './game.model';
 
-export class Tree {
-    mesh: any;
+export class Tree implements GameObject {
+    public mesh: any;
     scale: number;
 
     constructor(
-        public x: any,
-        public y: any,
-        public z: any,
-        public s: any
+        public x: number,
+        public y: number,
+        public z: number,
+        public s: number
     ) {
         // Explicit binding.
 
         // The object portrayed in the scene.
         this.mesh = new THREE.Object3D();
-        var top = createCylinder(1, 300, 300, 4, Colors.green, 0, 1000, 0);
-        var mid = createCylinder(1, 400, 400, 4, Colors.green, 0, 800, 0);
-        var bottom = createCylinder(1, 500, 500, 4, Colors.green, 0, 500, 0);
-        var trunk = createCylinder(100, 100, 250, 32, Colors.brownDark, 0, 125, 0);
+        const top = createCylinder(1, 300, 300, 4, Colors.green, 0, 1000, 0);
+        const mid = createCylinder(1, 400, 400, 4, Colors.green, 0, 800, 0);
+        const bottom = createCylinder(1, 500, 500, 4, Colors.green, 0, 500, 0);
+        const trunk = createCylinder(100, 100, 250, 32, Colors.brownDark, 0, 125, 0);
         this.mesh.add(top);
         this.mesh.add(mid);
         this.mesh.add(bottom);
