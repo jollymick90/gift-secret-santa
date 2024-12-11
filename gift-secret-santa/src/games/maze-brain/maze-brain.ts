@@ -182,13 +182,13 @@ export function MazeBrain(_element: HTMLElement) {
         // Update ball rotation.
         var tempMat = new THREE.Matrix4();
         tempMat.makeRotationAxis(new THREE.Vector3(0, 1, 0), stepX / ballRadius);
-        tempMat.multiplySelf(ballMesh.matrix);
+        tempMat.multiply(ballMesh.matrix);
         ballMesh.matrix = tempMat;
         tempMat = new THREE.Matrix4();
         tempMat.makeRotationAxis(new THREE.Vector3(1, 0, 0), -stepY / ballRadius);
-        tempMat.multiplySelf(ballMesh.matrix);
+        tempMat.multiply(ballMesh.matrix);
         ballMesh.matrix = tempMat;
-        ballMesh.rotation.getRotationFromMatrix(ballMesh.matrix);
+        ballMesh.rotation.setFromRotationMatrix(ballMesh.matrix);
 
         // Update camera and light positions.
         camera.position.x += (ballMesh.position.x - camera.position.x) * 0.1;
@@ -302,40 +302,30 @@ export function MazeBrain(_element: HTMLElement) {
             element.clientHeight
         );
         element.appendChild(renderer.domElement);
+
+        $(window).resize(onResize);
+
         gameState = 'initialize';
         requestAnimationFrame(gameLoop);
     }
-    // $(document).ready(function () {
-
-    //     // Prepare the instructions.
-    //     $('#instructions').center();
-    //     $('#instructions').hide();
-    //     KeyboardJS.bind.key('i', function () { $('#instructions').show() },
-    //         function () { $('#instructions').hide() });
-
-    //     // Create the renderer.
-    //     renderer = new THREE.WebGLRenderer();
-    //     renderer.setSize(window.innerWidth, window.innerHeight);
-    //     document.body.appendChild(renderer.domElement);
-
-    //     // Bind keyboard and resize events.
-    //     KeyboardJS.bind.axis('left', 'right', 'down', 'up', onMoveKey);
-    //     KeyboardJS.bind.axis('h', 'l', 'j', 'k', onMoveKey);
-    //     $(window).resize(onResize);
-
-
-    //     // Set the initial game state.
-    //     gameState = 'initialize';
-
-    //     // Start the game loop.
-    //     requestAnimationFrame(gameLoop);
-
-    // })
-
-
-
+    function clickLeft() { 
+        onMoveKey([-1, 0])
+    }
+    function clickRight() { 
+        onMoveKey([1, 0])
+    }
+    function clickUp() { 
+        onMoveKey([0, 1])
+    }
+    function clickDown() { 
+        onMoveKey([0, -1])
+    }
 
     return {
-        start
+        start,
+        clickLeft,
+        clickRight,
+        clickUp,
+        clickDown
     }
 }

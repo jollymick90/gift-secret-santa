@@ -68,12 +68,20 @@ export function runArcadeControl() {
         gameSpace?.classList.add('hidden');
         gameDoughut?.classList.add('hidden');
 
-  
+        const btnLeft = document.getElementById('btnLeft');
+        const btnRight = document.getElementById('btnRight');
+        const btnUp = document.getElementById('btnUp');
+        const btnDown = document.getElementById('btnDown');
+        const btnStop = document.getElementById('btnStop');
         const worldSpacerun = document.getElementById('maze');
         if (worldSpacerun) {
             console.log("run ")
-            const doughnutGame = MazeBrain(worldSpacerun);
-            doughnutGame.start();
+            const maxeGame = MazeBrain(worldSpacerun);
+            btnLeft?.addEventListener('click', maxeGame.clickLeft.bind(maxeGame));
+            btnRight?.addEventListener('click', maxeGame.clickRight.bind(maxeGame));
+            btnUp?.addEventListener('click', maxeGame.clickUp.bind(maxeGame));
+            btnDown?.addEventListener('click', maxeGame.clickDown.bind(maxeGame));
+            maxeGame.start();
         }
 
     }
@@ -88,10 +96,27 @@ export function runArcadeControl() {
         gameMaze?.classList.add('hidden');
         arcadeArea?.classList.add('hidden');
         gameSpace?.classList.add('hidden');
+        
+        const btnLeft = document.getElementById('btnLeft');
+        const btnRight = document.getElementById('btnRight');
+        const btnUp = document.getElementById('btnUp');
+        const btnDown = document.getElementById('btnDown');
+        const btnStop = document.getElementById('btnStop');
+
         const worldSpacerun = document.getElementById('doughnut');
         if (worldSpacerun) {
             console.log("run ")
-            const doughnutGame = DoughnutStars(worldSpacerun);
+            const doughnutGame = DoughnutStars({
+                _element: worldSpacerun,
+                output: (prop) => {
+                    
+                }
+            });
+            btnLeft?.addEventListener('click', doughnutGame.clickLeft.bind(doughnutGame));
+            btnRight?.addEventListener('click', doughnutGame.clickRight.bind(doughnutGame));
+            btnUp?.addEventListener('click', doughnutGame.clickUp.bind(doughnutGame));
+            btnDown?.addEventListener('click', doughnutGame.clickDown.bind(doughnutGame));
+          
             doughnutGame.animate();
         }
 

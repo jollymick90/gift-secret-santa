@@ -2,9 +2,19 @@
 
 import * as THREE from 'three';
 declare var Hands: any;
+type DoughnutStarsOutProps = {
+    score: number,
+    speed: number
+}
+type DoughnutStarsProps = {
+    _element: HTMLElement,
+    output: (prop: DoughnutStarsOutProps) => void
+}
 
-
-export function DoughnutStars(_element: HTMLElement) {
+export function DoughnutStars({
+    _element,
+    output
+}: DoughnutStarsProps) {
 
     const element = _element;
     let counter = 0;
@@ -172,12 +182,18 @@ export function DoughnutStars(_element: HTMLElement) {
             element.innerHTML = `speed is ${speed}`
     }
 
-    const setCounter = (count) => {
+    const updateCounter = (count) => {
         counter = count;
-        const element = document.querySelector('#counter');
+        // const element = document.querySelector('#counter');
 
-        if (element)
-            element.innerHTML = `count is ${counter}`
+        // if (element)
+        //     element.innerHTML = `count is ${counter}`
+
+        output({
+            score: count,
+            speed: speed
+        })
+        return counter;
     }
     function resetTorusPosition() {
         torus.position.z = -50; // Riposiziona il torus più indietro lungo l'asse Z
@@ -207,7 +223,8 @@ export function DoughnutStars(_element: HTMLElement) {
         ) {
             console.log("Il disco è passato attraverso la ciambella!");
             if (!trigger) {
-                setCounter(counter + 1);
+                speed = speed + stepSpeed;
+                updateCounter(counter + 1);
                 trigger = true;
             }
         }
@@ -223,46 +240,33 @@ export function DoughnutStars(_element: HTMLElement) {
         renderer.setSize(window.innerWidth, window.innerHeight);
     });
 
-    document.addEventListener('keydown', (event) => {
-        console.log(event.code)
-        if (event.code === 'KeyS') {
+    function keyDown(code: string) {
+        if (code === 'KeyS') {
             stop = !stop;
             console.log("s", stop);
-        } else if (event.code === 'KeyA') {
+        } else if (code === 'KeyA') {
             speed = speed + stepSpeed;
             printSpeed();
-        } else if (event.code === 'KeyD') {
+        } else if (code === 'KeyD') {
             speed = speed - stepSpeed;
             printSpeed();
-        } else if (event.code === 'KeyR') {
+        } else if (code === 'KeyR') {
             resetInitialTorus = true;
         }
 
-        else if (event.code === 'ArrowLeft') {
+        else if (code === 'ArrowLeft') {
             player.position.x -= 1; // Move left
-        } else if (event.code === 'ArrowRight') {
+        } else if (code === 'ArrowRight') {
             player.position.x += 1; // Move right
-        } else if (event.code === 'ArrowUp') {
+        } else if (code === 'ArrowUp') {
             player.position.y += 1; // Move Up
-        } else if (event.code === 'ArrowDown') {
+        } else if (code === 'ArrowDown') {
             player.position.y -= 1; // Move Down
         }
-    });
+    }
 
-    // Inizia il feed video e applica il rilevamento delle mani
-    // async function setup() {
-    //     await startCamera();
-    //     const sendVideo = async () => {
-    //         await hands.send({ image: videoElement });
-    //         requestAnimationFrame(sendVideo);
-    //     };
-    //     sendVideo();
-    // }
-    // setup();
-    // Animate function
     function animate() {
         
-
         requestAnimationFrame(animate);
         // console.log(torus.position.z)
         // Move the floor backward to create the endless runner effect
@@ -289,8 +293,26 @@ export function DoughnutStars(_element: HTMLElement) {
         renderer.render(scene, camera);
     }
 
+    function clickLeft() { 
+        keyDown('ArrowLeft')
+    }
+    function clickRight() { 
+        keyDown('ArrowRight')
+    }
+    function clickUp() { 
+        keyDown('ArrowUp')
+    }
+    function clickDown() { 
+        keyDown('ArrowDown')
+    }
+
+    
     return {
-        animate
+        animate,
+        clickLeft,
+        clickRight,
+        clickUp,
+        clickDown
     }
 }
 
