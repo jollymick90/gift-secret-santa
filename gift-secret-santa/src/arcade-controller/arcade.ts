@@ -44,7 +44,6 @@ export function runArcadeControl() {
             }
         })
         btnStop.addEventListener('click', () => {
-
             location.reload()
         });
     }
@@ -63,6 +62,8 @@ export function runArcadeControl() {
         const worldSpacerun = document.getElementById('spacerun');
         const btnLeft = document.getElementById('btnLeft');
         const rightLeft = document.getElementById('btnRight');
+        const btnUp = document.getElementById('btnUp');
+
         if (worldSpacerun) {
             game = new Game({
                 _element: worldSpacerun,
@@ -96,13 +97,13 @@ export function runArcadeControl() {
             })
             btnLeft?.addEventListener('click', game.clickLeft.bind(game));
             rightLeft?.addEventListener('click', game.clickRight.bind(game));
-            btnStop.addEventListener('click', () => {
+            btnUp?.addEventListener('click', game.clickUp.bind(game));
 
+            btnStop.addEventListener('click', () => {
                 location.reload()
             });
         } else {
             btnStop.addEventListener('click', () => {
-
                 location.reload()
             });
         }
@@ -139,16 +140,13 @@ export function runArcadeControl() {
                 maxeGame.start();
             });
             btnStop.addEventListener('click', () => {
-
                 location.reload()
             });
         } else {
             btnStop.addEventListener('click', () => {
-
                 location.reload()
             });
         }
-
     }
 
     function handleDoughnut() {
@@ -188,12 +186,10 @@ export function runArcadeControl() {
 
             doughnutGame.animate();
             btnStop.addEventListener('click', () => {
-
                 location.reload()
             });
         } else {
             btnStop.addEventListener('click', () => {
-
                 location.reload()
             });
         }

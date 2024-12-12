@@ -447,6 +447,11 @@ export class Game {
 
 		this.handleKeyPress(right);
 	}
+	public clickUp() {
+		console.log("clickUp")
+
+		this.handleKeyPress(up);
+	}
 
 	handleKeyPress(key: number) {
 		console.log("key", key)
