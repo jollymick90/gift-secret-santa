@@ -38,6 +38,7 @@ export class Game {
 	character: any;
 	renderer: any;
 	light: any;
+	stars: any;
 	objects: GameObject[] = [];
 	paused: boolean = false;
 	keysAllowed: { [key: string]: boolean } = {};
@@ -67,13 +68,10 @@ export class Game {
 			this.element.clientWidth,
 			this.element.clientHeight
 		);
-		// this.renderer.shadowMap.enabled = true;
-
+		this.renderer.shadowMap.enabled = true;
 		this.element.appendChild(this.renderer.domElement);
-
 		this.scene = new THREE.Scene();
 
-		this.addStarsBackground(this.scene);
 
 		this.fogDistance = 40000;
 		this.scene.fog = new THREE.Fog(0xFFFFFF, 1, this.fogDistance);
@@ -97,41 +95,40 @@ export class Game {
 		this.scene.add(this.light);
 
 		// // Initialize the character and add it to the scene.
-
 		this.addPlayer(this.scene);
 		this.addStreet(this.scene);
-		
+		this.addStarsBackground(this.scene);
 
-		// this.objects = [];
-		// this.treePresenceProb = 0.2;
-		// this.maxTreeSize = 0.5;
-		// this.createInitialCollisionObject()
+		this.objects = [];
+		this.treePresenceProb = 0.2;
+		this.maxTreeSize = 0.5;
+		this.createInitialCollisionObject()
 
-		// // The game is paused to begin with and the game is not over.
-		// this.gameOver = false;
-		// this.paused = true;
+		// The game is paused to begin with and the game is not over.
+		this.gameOver = false;
+		this.paused = true;
 
-		// this.keysAllowed = {};
+		this.keysAllowed = {};
 
-		// // Initialize the scores and difficulty.
-		// this.score = 0;
-		// this.difficulty = 0;
+		// Initialize the scores and difficulty.
+		this.score = 0;
+		this.difficulty = 0;
 
-		// document.addEventListener(
-		// 	'keydown',
-		// 	this.onKeyDown
-		// );
-		// document.addEventListener(
-		// 	'keyup',
-		// 	this.keyUp
-		// );
-		// document.addEventListener(
-		// 	'focus',
-		// 	this.onFocus
-		// );
+		document.addEventListener(
+			'keydown',
+			this.onKeyDown
+		);
+		document.addEventListener(
+			'keyup',
+			this.keyUp
+		);
+		document.addEventListener(
+			'focus',
+			this.onFocus
+		);
 	}
 	addStreet(scene: any) {
-		let ground = createBox(3000, 20, 120000, Colors.sand, 0, -400, -60000);
+		let ground = createBox(3000, 20, 120000, Colors.blue, 0, -400, -60000);
 		scene.add(ground);
 	}
 
@@ -143,19 +140,19 @@ export class Game {
 
 	private addStarsBackground(scene: any) {
 		const starGeometry = new THREE.BufferGeometry();
-		const starMaterial = new THREE.PointsMaterial({ color: 0xffffff });
+		const starMaterial = new THREE.PointsMaterial({ color: 0xffffff, size: 5 });
 		const starVertices: number[] = [];
 
-		for (let i = 0; i < 1000; i++) {
-			const x = (Math.random() - 0.5) * 200;
-			const y = (Math.random() - 0.5) * 200;
-			const z = (Math.random() - 0.5) * 200;
+		for (let i = 0; i < 10000; i++) {
+			const x = (Math.random() - 0.5) * 200000;
+			const y = (Math.random() - 0.5) * 200000;
+			const z = (Math.random() - 0.5) * 200000;
 			starVertices.push(x, y, z);
 		}
 
 		starGeometry.setAttribute('position', new THREE.Float32BufferAttribute(starVertices, 3));
-		const stars = new THREE.Points(starGeometry, starMaterial);
-		scene.add(stars);
+		this.stars = new THREE.Points(starGeometry, starMaterial);
+		scene.add(this.stars);
 	}
 
 	setOnPause(_onPause: () => void) {
@@ -181,7 +178,6 @@ export class Game {
 
 	onFocus = () => {
 		console.log("onFocus")
-
 		this.keysAllowed = {};
 	}
 
@@ -189,94 +185,101 @@ export class Game {
 		this.loop();
 	}
 
+	moveStars() {
+		        // Movimento delle stelle verso la camera
+				this.stars.position.z += 0.1;
+
+				// Se le stelle hanno superato un certo punto, riportale indietro
+				if (this.stars.position.z > 50) {
+					this.stars.position.z = -50;
+				}
+	}
 	/**
 	  * The main animation loop.
 	  */
 	loop() {
-
 		// Update the game.
-		// if (!this.paused) {
+		if (!this.paused) {
+			// Add more trees and increase the difficulty.
+			const meshPositionCondition = this.objects.length > 0 && ((this.objects[this.objects.length - 1].mesh.position.z) % 3000 === 0);
+			if (meshPositionCondition) {
+				this.difficulty += 1;
+				const levelLength = 30;
+				if (this.difficulty % levelLength == 0) {
+					const level = this.difficulty / levelLength;
+					switch (level) {
+						case 1:
+							this.treePresenceProb = 0.35;
+							this.maxTreeSize = 0.5;
+							break;
+						case 2:
+							this.treePresenceProb = 0.35;
+							this.maxTreeSize = 0.85;
+							break;
+						case 3:
+							this.treePresenceProb = 0.5;
+							this.maxTreeSize = 0.85;
+							break;
+						case 4:
+							this.treePresenceProb = 0.5;
+							this.maxTreeSize = 1.1;
+							break;
+						case 5:
+							this.treePresenceProb = 0.5;
+							this.maxTreeSize = 1.1;
+							break;
+						case 6:
+							this.treePresenceProb = 0.55;
+							this.maxTreeSize = 1.1;
+							break;
+						default:
+							this.treePresenceProb = 0.55;
+							this.maxTreeSize = 1.25;
+					}
+				}
+				if ((this.difficulty >= 5 * levelLength && this.difficulty < 6 * levelLength)) {
+					this.fogDistance -= (25000 / levelLength);
+				} else if (this.difficulty >= 8 * levelLength && this.difficulty < 9 * levelLength) {
+					this.fogDistance -= (5000 / levelLength);
+				}
+				this.createRowOfAsteroid({
+					position: -120000, 
+					probability: this.treePresenceProb, 
+					minScale: 0.5, 
+					maxScale: this.maxTreeSize
+				});
+				this.scene.fog.far = this.fogDistance;
+			}
 
-		// 	// Add more trees and increase the difficulty.
-		// 	const meshPositionCondition = this.objects.length > 0 && ((this.objects[this.objects.length - 1].mesh.position.z) % 3000 === 0);
-		// 	if (meshPositionCondition) {
-		// 		this.difficulty += 1;
-		// 		const levelLength = 30;
-		// 		if (this.difficulty % levelLength == 0) {
-		// 			const level = this.difficulty / levelLength;
-		// 			switch (level) {
-		// 				case 1:
-		// 					this.treePresenceProb = 0.35;
-		// 					this.maxTreeSize = 0.5;
-		// 					break;
-		// 				case 2:
-		// 					this.treePresenceProb = 0.35;
-		// 					this.maxTreeSize = 0.85;
-		// 					break;
-		// 				case 3:
-		// 					this.treePresenceProb = 0.5;
-		// 					this.maxTreeSize = 0.85;
-		// 					break;
-		// 				case 4:
-		// 					this.treePresenceProb = 0.5;
-		// 					this.maxTreeSize = 1.1;
-		// 					break;
-		// 				case 5:
-		// 					this.treePresenceProb = 0.5;
-		// 					this.maxTreeSize = 1.1;
-		// 					break;
-		// 				case 6:
-		// 					this.treePresenceProb = 0.55;
-		// 					this.maxTreeSize = 1.1;
-		// 					break;
-		// 				default:
-		// 					this.treePresenceProb = 0.55;
-		// 					this.maxTreeSize = 1.25;
-		// 			}
-		// 		}
-		// 		if ((this.difficulty >= 5 * levelLength && this.difficulty < 6 * levelLength)) {
-		// 			this.fogDistance -= (25000 / levelLength);
-		// 		} else if (this.difficulty >= 8 * levelLength && this.difficulty < 9 * levelLength) {
-		// 			this.fogDistance -= (5000 / levelLength);
-		// 		}
-		// 		this.createRowOfAsteroid({
-		// 			position: -120000, 
-		// 			probability: this.treePresenceProb, 
-		// 			minScale: 0.5, 
-		// 			maxScale: this.maxTreeSize
-		// 		});
-		// 		this.scene.fog.far = this.fogDistance;
-		// 	}
+			// Move the trees closer to the character.
+			this.objects.forEach(function (object) {
+				object.mesh.position.z += 100;
+			});
 
-		// 	// Move the trees closer to the character.
-		// 	this.objects.forEach(function (object) {
-		// 		object.mesh.position.z += 100;
-		// 	});
+			// Remove trees that are outside of the world.
+			this.objects = this.objects.filter(function (object) {
+				return object.mesh.position.z < 0;
+			});
 
-		// 	// Remove trees that are outside of the world.
-		// 	this.objects = this.objects.filter(function (object) {
-		// 		return object.mesh.position.z < 0;
-		// 	});
+			// Make the character move according to the controls.
+			this.character.update();
 
-		// 	// Make the character move according to the controls.
-		// 	this.character.update();
+			// Check for collisions between the character and objects.
+			if (this.collisionsDetected()) {
+				this.gameOver = true;
+				this.paused = true;
 
-		// 	// Check for collisions between the character and objects.
-		// 	if (this.collisionsDetected()) {
-		// 		this.gameOver = true;
-		// 		this.paused = true;
+				this.onCollisionDetected(this.score / 15000);
+			}
 
-		// 		this.onCollisionDetected(this.score / 15000);
-		// 	}
-
-		// 	// Update the scores.
-		// 	this.score += 10;
-		// 	this.onScoreChanged(this.score);
-		// }
-
+			// Update the scores.
+			this.score += 10;
+			this.onScoreChanged(this.score);
+		}
+		this.moveStars();
 		// Render the page and repeat.
 		this.renderer.render(this.scene, this.camera);
-		// requestAnimationFrame(this.loop.bind(this));
+		requestAnimationFrame(this.loop.bind(this));
 	}
 
 	private createInitialCollisionObject() {
@@ -288,8 +291,6 @@ export class Game {
 				maxScale: this.maxTreeSize
 			});
 		}
-
-
 	}
 
 	/**
@@ -351,7 +352,10 @@ export class Game {
 			const randomNumber = Math.random();
 			if (randomNumber < probability) {
 				const scale = minScale + (maxScale - minScale) * Math.random();
-				const tree = new Asteroid(lane * 800, -400, position, scale);
+				// const tree = new Asteroid(lane * 800, -400, position, scale);
+				//const asteroidY = 200; 
+				const tree = new Asteroid(lane * 800, 0, position, scale);
+ 
 				this.objects.push(tree);
 				this.scene.add(tree.mesh);
 			}

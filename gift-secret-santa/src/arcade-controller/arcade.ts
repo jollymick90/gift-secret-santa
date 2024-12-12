@@ -1,5 +1,6 @@
 import { World } from '../games/boxy-run/boxy-run-original';
 import { DoughnutStars } from '../games/doughnut-stars/doughut-stars';
+import { loadBox2D } from '../games/maze-brain/load-js';
 import { MazeBrain } from '../games/maze-brain/maze-brain';
 import { Game } from '../games/starship-run/game';
 
@@ -79,14 +80,19 @@ export function runArcadeControl() {
         const btnDown = document.getElementById('btnDown');
         const btnStop = document.getElementById('btnStop');
         const worldSpacerun = document.getElementById('maze');
+       
         if (worldSpacerun) {
-            console.log("run ")
-            const maxeGame = MazeBrain(worldSpacerun);
-            btnLeft?.addEventListener('click', maxeGame.clickLeft.bind(maxeGame));
-            btnRight?.addEventListener('click', maxeGame.clickRight.bind(maxeGame));
-            btnUp?.addEventListener('click', maxeGame.clickUp.bind(maxeGame));
-            btnDown?.addEventListener('click', maxeGame.clickDown.bind(maxeGame));
-            maxeGame.start();
+   
+            loadBox2D(() => {
+                console.log('Box2D caricato');
+                console.log("run ")
+                const maxeGame = MazeBrain(worldSpacerun);
+                btnLeft?.addEventListener('click', maxeGame.clickLeft.bind(maxeGame));
+                btnRight?.addEventListener('click', maxeGame.clickRight.bind(maxeGame));
+                btnUp?.addEventListener('click', maxeGame.clickUp.bind(maxeGame));
+                btnDown?.addEventListener('click', maxeGame.clickDown.bind(maxeGame));
+                maxeGame.start();
+            });
         }
 
     }
