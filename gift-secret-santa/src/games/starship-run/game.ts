@@ -22,13 +22,49 @@ type RowOfTreeProp = {
 }
 
 type StarshipRunOutProps = {
-    score?: number,
-    speed?: number,
+	score?: number,
+	speed?: number,
 	msg?: string[]
 }
 type StarshipRunProps = {
-    _element: HTMLElement,
-    output: (prop: StarshipRunOutProps) => void
+	_element: HTMLElement,
+	output: (prop: StarshipRunOutProps) => void
+}
+
+class GroundSegment implements GameObject {
+	constructor(x: number, y: number, z: number) {
+
+		this.mesh = createBox(3000, 20, 3000, Colors.cherry, x, y, z);
+	}
+	mesh: any;
+	x: number;
+	y: number;
+	z: number;
+	s: number;
+
+	collides(charMinX: number, charMaxX: number, charMinY: number,
+		charMaxY: number, charMinZ: number, charMaxZ: number) {
+		// Il terreno non causa collisione distruttiva, 
+		// ma ci serve sapere se il personaggio è "appoggiato" su di esso.
+		// Possiamo semplicemente verificare se il personaggio si trova nel range Z del terreno 
+		// e X all'interno del terreno.
+
+		// Calcoliamo i bounding box del terreno
+		let segMinX = this.mesh.position.x - 1500;
+		let segMaxX = this.mesh.position.x + 1500;
+		let segMinZ = this.mesh.position.z - 1500;
+		let segMaxZ = this.mesh.position.z + 1500;
+
+		// Se l'omino è all'interno del riquadro del terreno in X e Z,
+		// lo consideriamo "supportato".
+		if (charMaxX > segMinX && charMinX < segMaxX &&
+			charMaxZ > segMinZ && charMinZ < segMaxZ) {
+			// Qui potremmo mettere un flag che indica che sotto l'omino c'è terreno.
+			return true;
+		}
+
+		return false;
+	}
 }
 export class Game {
 
@@ -40,6 +76,7 @@ export class Game {
 	light: any;
 	stars: any;
 	objects: GameObject[] = [];
+	grounds: GroundSegment[] = [];
 	paused: boolean = false;
 	keysAllowed: { [key: string]: boolean } = {};
 	score: any;
@@ -91,7 +128,7 @@ export class Game {
 		window.addEventListener('resize', this.handleWindowResize.bind(this), false);
 
 		// // Initialize the lights.
-		this.light = new THREE.HemisphereLight(0xFFFFFF,0xFFFFFF, 1);
+		this.light = new THREE.HemisphereLight(0xFFFFFF, 0xFFFFFF, 1);
 		this.scene.add(this.light);
 
 		// // Initialize the character and add it to the scene.
@@ -128,8 +165,18 @@ export class Game {
 		);
 	}
 	addStreet(scene: any) {
-		let ground = createBox(3000, 20, 120000, Colors.cherry, 0, -400, -60000);
-		scene.add(ground);
+		// let ground = createBox(3000, 20, 120000, Colors.cherry, 0, -400, -60000);
+		// scene.add(ground);
+	}
+
+	createRowOfGround(position: number, createSegment: boolean) {
+		if (!createSegment) {
+			// Niente suolo qui -> dirupo
+			return;
+		}
+		const groundSegment = new GroundSegment(0, -400, position);
+		this.grounds.push(groundSegment);
+		this.scene.add(groundSegment.mesh);
 	}
 
 	addPlayer(scene: any) {
@@ -172,7 +219,7 @@ export class Game {
 	}
 
 	keyUp = (e: KeyboardEvent) => {
-		console.log("keyUp",e.keyCode)
+		console.log("keyUp", e.keyCode)
 		this.keysAllowed[e.keyCode] = true;
 	}
 
@@ -186,13 +233,13 @@ export class Game {
 	}
 
 	moveStars() {
-		        // Movimento delle stelle verso la camera
-				this.stars.position.z += 0.1;
+		// Movimento delle stelle verso la camera
+		this.stars.position.z += 0.1;
 
-				// Se le stelle hanno superato un certo punto, riportale indietro
-				if (this.stars.position.z > 50) {
-					this.stars.position.z = -50;
-				}
+		// Se le stelle hanno superato un certo punto, riportale indietro
+		if (this.stars.position.z > 50) {
+			this.stars.position.z = -50;
+		}
 	}
 	/**
 	  * The main animation loop.
@@ -204,50 +251,29 @@ export class Game {
 			const meshPositionCondition = this.objects.length > 0 && ((this.objects[this.objects.length - 1].mesh.position.z) % 3000 === 0);
 			if (meshPositionCondition) {
 				this.difficulty += 1;
-				const levelLength = 30;
-				if (this.difficulty % levelLength == 0) {
-					const level = this.difficulty / levelLength;
-					switch (level) {
-						case 1:
-							this.treePresenceProb = 0.35;
-							this.maxTreeSize = 0.5;
-							break;
-						case 2:
-							this.treePresenceProb = 0.35;
-							this.maxTreeSize = 0.85;
-							break;
-						case 3:
-							this.treePresenceProb = 0.5;
-							this.maxTreeSize = 0.85;
-							break;
-						case 4:
-							this.treePresenceProb = 0.5;
-							this.maxTreeSize = 1.1;
-							break;
-						case 5:
-							this.treePresenceProb = 0.5;
-							this.maxTreeSize = 1.1;
-							break;
-						case 6:
-							this.treePresenceProb = 0.55;
-							this.maxTreeSize = 1.1;
-							break;
-						default:
-							this.treePresenceProb = 0.55;
-							this.maxTreeSize = 1.25;
-					}
-				}
-				if ((this.difficulty >= 5 * levelLength && this.difficulty < 6 * levelLength)) {
-					this.fogDistance -= (25000 / levelLength);
-				} else if (this.difficulty >= 8 * levelLength && this.difficulty < 9 * levelLength) {
-					this.fogDistance -= (5000 / levelLength);
-				}
+
+				this.calculateFogDistance();
+
+				// this.createRowOfAsteroid({
+				// 	position: -120000,
+				// 	probability: this.treePresenceProb,
+				// 	minScale: 0.5,
+				// 	maxScale: this.maxTreeSize
+				// });
+				// this.scene.fog.far = this.fogDistance;
+				let newPos = -120000;
 				this.createRowOfAsteroid({
-					position: -120000, 
-					probability: this.treePresenceProb, 
-					minScale: 0.5, 
+					position: newPos,
+					probability: this.treePresenceProb,
+					minScale: 0.5,
 					maxScale: this.maxTreeSize
 				});
+
+				// Decidiamo se creare un gap
+				let gapProbability = 0.1 + this.difficulty * 0.001; // la probabilità di gap può crescere col tempo
+				const createSegment = (Math.random() > gapProbability);
+				this.createRowOfGround(newPos, createSegment);
+
 				this.scene.fog.far = this.fogDistance;
 			}
 
@@ -261,33 +287,51 @@ export class Game {
 				return object.mesh.position.z < 0;
 			});
 
+			this.grounds.forEach(function (object) {
+				object.mesh.position.z += 100;
+			});
+
+			// Remove trees that are outside of the world.
+			this.grounds = this.grounds.filter(function (object) {
+				return object.mesh.position.z < 0;
+			});
+			
+
 			// Make the character move according to the controls.
 			this.character.update();
 
 			// Check for collisions between the character and objects.
-			if (this.collisionsDetected()) {
+			// Controlliamo collisioni e gap
+			if (this.checkFallIntoGap()) {
+				this.gameOver = true;
+				this.paused = true;
+				this.onCollisionDetected({
+					score: this.score,
+					msg: ["Sei caduto nel dirupo! Game Over!"]
+				});
+			} else if (this.collisionsDetected()) {
 				this.gameOver = true;
 				this.paused = true;
 				const textOutput = "Game over!";
-    			let rankNames = ["Typical Engineer", "Couch Potato", "Weekend Jogger", "Daily Runner",
-    				"Local Prospect", "Regional Star", "National Champ", "Second Mo Farah"];
-					let rankIndex = Math.floor(this.score / 15000);
-					let nextRankRow = "";
-					// If applicable, display the next achievable rank.
+				let rankNames = ["Typical Engineer", "Couch Potato", "Weekend Jogger", "Daily Runner",
+					"Local Prospect", "Regional Star", "National Champ", "Second Mo Farah"];
+				let rankIndex = Math.floor(this.score / 15000);
+				let nextRankRow = "";
+				// If applicable, display the next achievable rank.
 				if (this.score < 124000) {
-					
+
 					nextRankRow = (rankIndex <= 5)
-						? "".concat((rankIndex + 1) * 15 + "", "k-", (rankIndex + 2) * 15+ "", "k")
+						? "".concat((rankIndex + 1) * 15 + "", "k-", (rankIndex + 2) * 15 + "", "k")
 						: (rankIndex == 6)
 							? "105k-124k"
 							: "124k+";
-					nextRankRow = nextRankRow +  " *Score within this range to earn the next rank*";
+					nextRankRow = nextRankRow + " *Score within this range to earn the next rank*";
 				}
 
 				// Display the achieved rank.
 				var achievedRankRow = "";
 				achievedRankRow = (rankIndex <= 6)
-					? "".concat(rankIndex * 15+ "", "k-", (rankIndex + 1) * 15+ "", "k").bold()
+					? "".concat(rankIndex * 15 + "", "k-", (rankIndex + 1) * 15 + "", "k").bold()
 					: (this.score < 124000)
 						? "105k-124k".bold()
 						: "124k+".bold();
@@ -296,21 +340,21 @@ export class Game {
 					: (this.score < 124000)
 						? "Congrats! You're a ".concat(rankNames[7], "!").bold()
 						: "Congrats! You exceeded the creator's high score of 123790 and beat the game!".bold();
-				achievedRankRow = achievedRankRow + " " +  achievedRankRow2
-    			// Display all ranks lower than the achieved rank.
-    			if (this.score >= 120000) {
-    				rankIndex = 7;
-    			}
+				achievedRankRow = achievedRankRow + " " + achievedRankRow2
+				// Display all ranks lower than the achieved rank.
+				if (this.score >= 120000) {
+					rankIndex = 7;
+				}
 				var msgTotal = "";
-    			for (var i = 0; i < rankIndex; i++) {
-    				
-    				msgTotal = msgTotal + " " + "".concat(i * 15+ "", "k-", (i + 1) * 15+ "", "k");
-    				msgTotal = msgTotal + " " + rankNames[i];
-    			}
-    			if (this.score > 124000) {
-    				msgTotal = msgTotal + " " + "105k-124k";
-    				msgTotal = msgTotal + " " + rankNames[7];
-    			}
+				for (var i = 0; i < rankIndex; i++) {
+
+					msgTotal = msgTotal + " " + "".concat(i * 15 + "", "k-", (i + 1) * 15 + "", "k");
+					msgTotal = msgTotal + " " + rankNames[i];
+				}
+				if (this.score > 124000) {
+					msgTotal = msgTotal + " " + "105k-124k";
+					msgTotal = msgTotal + " " + rankNames[7];
+				}
 				this.onCollisionDetected({
 					score: this.score / 15000,
 					msg: [
@@ -331,8 +375,62 @@ export class Game {
 		this.renderer.render(this.scene, this.camera);
 		requestAnimationFrame(this.loop.bind(this));
 	}
-
+	calculateFogDistance() {
+		const levelLength = 30;
+		if (this.difficulty % levelLength == 0) {
+			const level = this.difficulty / levelLength;
+			switch (level) {
+				case 1:
+					this.treePresenceProb = 0.35;
+					this.maxTreeSize = 0.5;
+					break;
+				case 2:
+					this.treePresenceProb = 0.35;
+					this.maxTreeSize = 0.85;
+					break;
+				case 3:
+					this.treePresenceProb = 0.5;
+					this.maxTreeSize = 0.85;
+					break;
+				case 4:
+					this.treePresenceProb = 0.5;
+					this.maxTreeSize = 1.1;
+					break;
+				case 5:
+					this.treePresenceProb = 0.5;
+					this.maxTreeSize = 1.1;
+					break;
+				case 6:
+					this.treePresenceProb = 0.55;
+					this.maxTreeSize = 1.1;
+					break;
+				default:
+					this.treePresenceProb = 0.55;
+					this.maxTreeSize = 1.25;
+			}
+		}
+		if ((this.difficulty >= 5 * levelLength && this.difficulty < 6 * levelLength)) {
+			this.fogDistance -= (25000 / levelLength);
+		} else if (this.difficulty >= 8 * levelLength && this.difficulty < 9 * levelLength) {
+			this.fogDistance -= (5000 / levelLength);
+		}
+	}
 	private createInitialCollisionObject() {
+		for (let i = 0; i < 30; i++) {
+		  const zPos = i * -3000; // Il primo sarà a 0, poi -3000, -6000, ecc.
+		  this.createRowOfAsteroid({
+			position: zPos,
+			probability: this.treePresenceProb,
+			minScale: 0.5,
+			maxScale: this.maxTreeSize
+		  });
+	  
+		  let gapProbability = 0.1;
+		  const createSegment = (Math.random() > gapProbability);
+		  this.createRowOfGround(zPos, createSegment);
+		}
+	  }
+	private createInitialCollisionObjectOld() {
 		for (let i = 10; i < 40; i++) {
 			this.createRowOfAsteroid({
 				position: i * -3000,
@@ -340,7 +438,14 @@ export class Game {
 				minScale: 0.5,
 				maxScale: this.maxTreeSize
 			});
+
+			// Decidiamo se creare o no il segmento di suolo
+			// Ad esempio, creiamo un gap casuale con bassa probabilità
+			let gapProbability = 0.1; // 10% di probabilità di gap
+			const createSegment = (Math.random() > gapProbability);
+			this.createRowOfGround(i * -3000, createSegment);
 		}
+
 	}
 
 	/**
@@ -366,11 +471,11 @@ export class Game {
 	createRowOfTrees(
 		prop: RowOfTreeProp
 	) {
-		const { 
+		const {
 			position,
 			probability,
 			minScale,
-			maxScale 
+			maxScale
 		} = prop;
 		if (disableObstacle) {
 			return;
@@ -386,14 +491,14 @@ export class Game {
 		}
 	}
 
-	createRowOfAsteroid(	
+	createRowOfAsteroid(
 		prop: RowOfTreeProp
 	) {
-		const { 
+		const {
 			position,
 			probability,
 			minScale,
-			maxScale 
+			maxScale
 		} = prop;
 		if (disableObstacle) {
 			return;
@@ -405,7 +510,7 @@ export class Game {
 				// const tree = new Asteroid(lane * 800, -400, position, scale);
 				//const asteroidY = 200; 
 				const tree = new Asteroid(lane * 800, 0, position, scale);
- 
+
 				this.objects.push(tree);
 				this.scene.add(tree.mesh);
 			}
@@ -426,14 +531,53 @@ export class Game {
 		for (let i = 0; i < this.objects.length; i++) {
 			if (this.objects[i].collides(charMinX, charMaxX, charMinY,
 				charMaxY, charMinZ, charMaxZ)) {
-				return true;
+				return false;
+				//return true;
 			}
 		}
 		return false;
 	}
 
+	checkFallIntoGap() {
+		// Logica:
+		// 1. Calcola bounding box del personaggio
+		const charMinX = this.character.element.position.x - 115;
+		const charMaxX = this.character.element.position.x + 115;
+		const charMinY = this.character.element.position.y - 310;
+		const charMaxY = this.character.element.position.y + 320;
+		const charMinZ = this.character.element.position.z - 40;
+		const charMaxZ = this.character.element.position.z + 40;
+
+		// 2. Controlla se c'è almeno un segmento di terreno sotto i piedi
+		// Se non c'è alcun segmento di terreno che "collida" con il personaggio da sotto,
+		// significa che siamo in un gap
+		let isOnGround = false;
+		for (let i = 0; i < this.grounds.length; i++) {
+			const obj = this.grounds[i];
+			if (obj instanceof GroundSegment) {
+				if (obj.collides(charMinX, charMaxX, charMinY, charMaxY, charMinZ, charMaxZ)) {
+					isOnGround = true;
+					
+					break;
+				}
+			}
+		}
+		console.log("isOnGround", isOnGround)
+
+		// 3. Se non è a terra, controlliamo se sta saltando abbastanza in alto.
+		// Se il personaggio è sotto un certo Y (diciamo < -200 se non sta saltando alto), allora cade.
+		// Puoi aggiustare la logica in base all'implementazione del salto del tuo Character.
+		if (!isOnGround && this.character.element.position.y <= -400) {
+			// Personaggio è "caduto" nel vuoto
+			console.log("caduto")
+			return false;
+		}
+		
+		return false;
+	}
+
 	onKeyDown = (e: KeyboardEvent) => {
-		console.log("onKeyDownPressed",e)
+		console.log("onKeyDownPressed", e)
 		const key = e.keyCode;
 		this.handleKeyPress(key);
 	}
