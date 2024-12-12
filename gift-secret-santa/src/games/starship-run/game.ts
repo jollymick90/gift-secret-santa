@@ -24,7 +24,7 @@ type RowOfTreeProp = {
 type StarshipRunOutProps = {
     score?: number,
     speed?: number,
-	msg?: string
+	msg?: string[]
 }
 type StarshipRunProps = {
     _element: HTMLElement,
@@ -52,7 +52,7 @@ export class Game {
 
 	private onPause: () => void = () => { console.warn("noPauseDefined"); };
 	private onResume: () => void = () => { console.warn("noResumeDefined"); };
-	private onCollisionDetected: (score: number) => void = (score: number) => { console.warn("onCollisionDetected") }
+	private onCollisionDetected: (prop: StarshipRunOutProps) => void = (prop: StarshipRunOutProps) => { console.warn("onCollisionDetected") }
 	private onScoreChanged: (score: number) => void = (score: number) => { console.warn("onCollisionDetected") }
 
 	constructor(prop: StarshipRunProps) {
@@ -128,7 +128,7 @@ export class Game {
 		);
 	}
 	addStreet(scene: any) {
-		let ground = createBox(3000, 20, 120000, Colors.blue, 0, -400, -60000);
+		let ground = createBox(3000, 20, 120000, Colors.cherry, 0, -400, -60000);
 		scene.add(ground);
 	}
 
@@ -163,7 +163,7 @@ export class Game {
 		this.onResume = _onResume;
 	}
 
-	setOnCollisionDetected(_onCollisionDetected: (score: number) => void) {
+	setOnCollisionDetected(_onCollisionDetected: (score: StarshipRunOutProps) => void) {
 		this.onCollisionDetected = _onCollisionDetected;
 	}
 
@@ -268,8 +268,58 @@ export class Game {
 			if (this.collisionsDetected()) {
 				this.gameOver = true;
 				this.paused = true;
+				const textOutput = "Game over!";
+    			let rankNames = ["Typical Engineer", "Couch Potato", "Weekend Jogger", "Daily Runner",
+    				"Local Prospect", "Regional Star", "National Champ", "Second Mo Farah"];
+					let rankIndex = Math.floor(this.score / 15000);
+					let nextRankRow = "";
+					// If applicable, display the next achievable rank.
+				if (this.score < 124000) {
+					
+					nextRankRow = (rankIndex <= 5)
+						? "".concat((rankIndex + 1) * 15 + "", "k-", (rankIndex + 2) * 15+ "", "k")
+						: (rankIndex == 6)
+							? "105k-124k"
+							: "124k+";
+					nextRankRow = nextRankRow +  " *Score within this range to earn the next rank*";
+				}
 
-				this.onCollisionDetected(this.score / 15000);
+				// Display the achieved rank.
+				var achievedRankRow = "";
+				achievedRankRow = (rankIndex <= 6)
+					? "".concat(rankIndex * 15+ "", "k-", (rankIndex + 1) * 15+ "", "k").bold()
+					: (this.score < 124000)
+						? "105k-124k".bold()
+						: "124k+".bold();
+				var achievedRankRow2 = (rankIndex <= 6)
+					? "Congrats! You're a ".concat(rankNames[rankIndex], "!").bold()
+					: (this.score < 124000)
+						? "Congrats! You're a ".concat(rankNames[7], "!").bold()
+						: "Congrats! You exceeded the creator's high score of 123790 and beat the game!".bold();
+				achievedRankRow = achievedRankRow + " " +  achievedRankRow2
+    			// Display all ranks lower than the achieved rank.
+    			if (this.score >= 120000) {
+    				rankIndex = 7;
+    			}
+				var msgTotal = "";
+    			for (var i = 0; i < rankIndex; i++) {
+    				
+    				msgTotal = msgTotal + " " + "".concat(i * 15+ "", "k-", (i + 1) * 15+ "", "k");
+    				msgTotal = msgTotal + " " + rankNames[i];
+    			}
+    			if (this.score > 124000) {
+    				msgTotal = msgTotal + " " + "105k-124k";
+    				msgTotal = msgTotal + " " + rankNames[7];
+    			}
+				this.onCollisionDetected({
+					score: this.score / 15000,
+					msg: [
+						textOutput,
+						achievedRankRow,
+						msgTotal
+					] as string[]
+
+				});
 			}
 
 			// Update the scores.

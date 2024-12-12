@@ -41,13 +41,16 @@ var deg2Rad = Math.PI / 180;
  * The world in which Boxy Run takes place.
  *
  */
-
+type WorldProps = {
+    _element: HTMLElement,
+    output: (prop: any) => void
+}
 /** 
   * A class of which the world is an instance. Initializes the game
   * and contains the main game loop.
   *
   */
-export function World() {
+export function World(prop: WorldProps) {
 
 	// Explicit binding of this even in changing contexts.
 	var self = this;
@@ -67,7 +70,7 @@ export function World() {
 	function init() {
 
 		// Locate where the world is to be located on the screen.
-		element = document.getElementById('world');
+		element = prop._element;//document.getElementById('world');
 
 		// Initialize the renderer.
 		renderer = new THREE.WebGLRenderer({
@@ -155,19 +158,23 @@ export function World() {
 					if (paused && !collisionsDetected() && key > 18) {
 						paused = false;
 						character.onUnpause();
-						document.getElementById(
-							"variable-content").style.visibility = "hidden";
-						document.getElementById(
-							"controls").style.display = "none";
+						
+						// document.getElementById(
+						// 	"variable-content").style.visibility = "hidden";
+						// document.getElementById(
+						// 	"controls").style.display = "none";
 					} else {
 						if (key == p) {
 							paused = true;
 							character.onPause();
-							document.getElementById(
-								"variable-content").style.visibility = "visible";
-							document.getElementById(
-								"variable-content").innerHTML = 
-								"Game is paused. Press any key to resume.";
+							prop.output({
+								msg: "Game is paused. Press any key to resume."
+							})
+							// document.getElementById(
+							// 	"variable-content").style.visibility = "visible";
+							// document.getElementById(
+							// 	"variable-content").innerHTML = 
+							// 	"Game is paused. Press any key to resume.";
 						}
 						if (key == up && !paused) {
 							character.onUpKeyPressed();
@@ -282,60 +289,70 @@ export function World() {
             			document.location.reload(true);
         			}
     			);
-    			var variableContent = document.getElementById("variable-content");
-    			variableContent.style.visibility = "visible";
-    			variableContent.innerHTML = 
-    				"Game over! Press the down arrow to try again.";
-    			var table = document.getElementById("ranks");
+    			// var variableContent = document.getElementById("variable-content");
+    			// variableContent.style.visibility = "visible";
+				let textOutput = "Game over!";
+    			
     			var rankNames = ["Typical Engineer", "Couch Potato", "Weekend Jogger", "Daily Runner",
     				"Local Prospect", "Regional Star", "National Champ", "Second Mo Farah"];
     			var rankIndex = Math.floor(score / 15000);
+				let nextRankRow = "";
 
 				// If applicable, display the next achievable rank.
 				if (score < 124000) {
-					var nextRankRow = table.insertRow(0);
-					nextRankRow.insertCell(0).innerHTML = (rankIndex <= 5)
+					
+					nextRankRow = (rankIndex <= 5)
 						? "".concat((rankIndex + 1) * 15, "k-", (rankIndex + 2) * 15, "k")
 						: (rankIndex == 6)
 							? "105k-124k"
 							: "124k+";
-					nextRankRow.insertCell(1).innerHTML = "*Score within this range to earn the next rank*";
+					nextRankRow = nextRankRow +  " *Score within this range to earn the next rank*";
 				}
 
 				// Display the achieved rank.
-				var achievedRankRow = table.insertRow(0);
-				achievedRankRow.insertCell(0).innerHTML = (rankIndex <= 6)
+				var achievedRankRow = "";
+				achievedRankRow = (rankIndex <= 6)
 					? "".concat(rankIndex * 15, "k-", (rankIndex + 1) * 15, "k").bold()
 					: (score < 124000)
 						? "105k-124k".bold()
 						: "124k+".bold();
-				achievedRankRow.insertCell(1).innerHTML = (rankIndex <= 6)
+				var achievedRankRow2 = (rankIndex <= 6)
 					? "Congrats! You're a ".concat(rankNames[rankIndex], "!").bold()
 					: (score < 124000)
 						? "Congrats! You're a ".concat(rankNames[7], "!").bold()
 						: "Congrats! You exceeded the creator's high score of 123790 and beat the game!".bold();
-
+				achievedRankRow = achievedRankRow + " " +  achievedRankRow2
     			// Display all ranks lower than the achieved rank.
     			if (score >= 120000) {
     				rankIndex = 7;
     			}
+				var msgTotal = "";
     			for (var i = 0; i < rankIndex; i++) {
-    				var row = table.insertRow(i);
-    				row.insertCell(0).innerHTML = "".concat(i * 15, "k-", (i + 1) * 15, "k");
-    				row.insertCell(1).innerHTML = rankNames[i];
+    				
+    				msgTotal = msgTotal + " " + "".concat(i * 15, "k-", (i + 1) * 15, "k");
+    				msgTotal = msgTotal + " " + rankNames[i];
     			}
     			if (score > 124000) {
-    				var row = table.insertRow(7);
-    				row.insertCell(0).innerHTML = "105k-124k";
-    				row.insertCell(1).innerHTML = rankNames[7];
+    				msgTotal = msgTotal + " " + "105k-124k";
+    				msgTotal = msgTotal + " " + rankNames[7];
     			}
+				prop.output({
+					score,
+					msg: [
+						textOutput,
+						achievedRankRow,
+						msgTotal
+					] as string[]
+				})
 
 			}
 
 			// Update the scores.
 			score += 10;
-			document.getElementById("score").innerHTML = score;
-
+			// document.getElementById("score").innerHTML = score;
+			prop.output({
+				score: score
+			})
 		}
 
 		// Render the page and repeat.

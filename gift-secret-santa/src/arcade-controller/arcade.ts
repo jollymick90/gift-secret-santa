@@ -17,6 +17,9 @@ export function runArcadeControl() {
     const gameSpace = document.getElementById('spacerun');
     const gameDoughut = document.getElementById('doughnut');
     const gameMaze = document.getElementById('maze');
+    const btnStop = document.getElementById('btnStop');
+    const scoreHtml = document.getElementById('score');
+    const msgHtml = document.getElementById('msg');
 
     function handleGameOne() {
         console.log("click game 1");
@@ -28,7 +31,22 @@ export function runArcadeControl() {
         arcadeArea?.classList.add('hidden');
         gameDoughut?.classList.add('hidden');
         gameMaze?.classList.add('hidden');
-        new World()
+        new World({
+            _element: document.getElementById('world'),
+            output: (props) => {
+
+                if (scoreHtml && props.score) {
+                    scoreHtml.innerHTML = props.score;
+                }
+                if (msgHtml && props.msg) {
+                    msgHtml.innerHTML = props.msg.join(" - ")
+                }
+            }
+        })
+        btnStop.addEventListener('click', () => {
+
+            location.reload()
+        });
     }
 
     function handleGameStarsRun() {
@@ -48,18 +66,45 @@ export function runArcadeControl() {
         if (worldSpacerun) {
             game = new Game({
                 _element: worldSpacerun,
-                output: (prop) => {
-                    console.log("prop", prop);
+                output: (props) => {
+                    console.log("prop", props);
+                    if (scoreHtml && props.score) {
+                        scoreHtml.innerHTML = `${props.score}`;
+                    }
+                    if (msgHtml && props.msg) {
+                        msgHtml.innerHTML = props.msg.join(" - ");
+                    }
                 }
             });
             game.init();
             game.setOnPause(() => { });
             game.setOnResume(() => { });
-            game.setOnCollisionDetected((score: number) => { })
-            game.setOnScoreChanged((score: number) => { })
+            game.setOnCollisionDetected((
+                props
+            ) => {
+                if (scoreHtml && props.score) {
+                    scoreHtml.innerHTML = `${props.score}`;
+                }
+                if (msgHtml && props.msg) {
+                    msgHtml.innerHTML = props.msg.join(" - ");
+                }
+            })
+            game.setOnScoreChanged((score: number) => {
+                if (scoreHtml && score) {
+                    scoreHtml.innerHTML = `${score}`;
+                }
+            })
             btnLeft?.addEventListener('click', game.clickLeft.bind(game));
             rightLeft?.addEventListener('click', game.clickRight.bind(game));
+            btnStop.addEventListener('click', () => {
 
+                location.reload()
+            });
+        } else {
+            btnStop.addEventListener('click', () => {
+
+                location.reload()
+            });
         }
     }
 
@@ -78,11 +123,11 @@ export function runArcadeControl() {
         const btnRight = document.getElementById('btnRight');
         const btnUp = document.getElementById('btnUp');
         const btnDown = document.getElementById('btnDown');
-        const btnStop = document.getElementById('btnStop');
+
         const worldSpacerun = document.getElementById('maze');
-       
+
         if (worldSpacerun) {
-   
+
             loadBox2D(() => {
                 console.log('Box2D caricato');
                 console.log("run ")
@@ -92,6 +137,15 @@ export function runArcadeControl() {
                 btnUp?.addEventListener('click', maxeGame.clickUp.bind(maxeGame));
                 btnDown?.addEventListener('click', maxeGame.clickDown.bind(maxeGame));
                 maxeGame.start();
+            });
+            btnStop.addEventListener('click', () => {
+
+                location.reload()
+            });
+        } else {
+            btnStop.addEventListener('click', () => {
+
+                location.reload()
             });
         }
 
@@ -107,28 +161,41 @@ export function runArcadeControl() {
         gameMaze?.classList.add('hidden');
         arcadeArea?.classList.add('hidden');
         gameSpace?.classList.add('hidden');
-        
+
         const btnLeft = document.getElementById('btnLeft');
         const btnRight = document.getElementById('btnRight');
         const btnUp = document.getElementById('btnUp');
         const btnDown = document.getElementById('btnDown');
-        const btnStop = document.getElementById('btnStop');
 
         const worldSpacerun = document.getElementById('doughnut');
         if (worldSpacerun) {
             console.log("run ")
             const doughnutGame = DoughnutStars({
                 _element: worldSpacerun,
-                output: (prop) => {
-                    
+                output: (props) => {
+                    if (scoreHtml && props.score) {
+                        scoreHtml.innerHTML = `${props.score}`;
+                    }
+                    if (msgHtml && props.msg) {
+                        msgHtml.innerHTML = props.msg.join(" - ");
+                    }
                 }
             });
             btnLeft?.addEventListener('click', doughnutGame.clickLeft.bind(doughnutGame));
             btnRight?.addEventListener('click', doughnutGame.clickRight.bind(doughnutGame));
             btnUp?.addEventListener('click', doughnutGame.clickUp.bind(doughnutGame));
             btnDown?.addEventListener('click', doughnutGame.clickDown.bind(doughnutGame));
-          
+
             doughnutGame.animate();
+            btnStop.addEventListener('click', () => {
+
+                location.reload()
+            });
+        } else {
+            btnStop.addEventListener('click', () => {
+
+                location.reload()
+            });
         }
 
     }

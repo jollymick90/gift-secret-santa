@@ -4,14 +4,14 @@ import * as THREE from 'three';
 
 declare var Hands: any;
 type DoughnutStarsOutProps = {
-    score: number,
-    speed: number
+    score?: number,
+    msg?: string[]
 }
 type DoughnutStarsProps = {
     _element: HTMLElement,
     output: (prop: DoughnutStarsOutProps) => void
 }
-
+    
 export function DoughnutStars({
     _element,
     output
@@ -78,7 +78,10 @@ export function DoughnutStars({
     let resetInitialTorus = false;
     let stepSpeed = 5;
     let speed = 5;
-
+    output({
+        score: 0,
+        msg: [`Speed: ${speed}`]
+    })
 
     // Configura la webcam
     // const videoElement = document.createElement('video');
@@ -185,14 +188,10 @@ export function DoughnutStars({
 
     const updateCounter = (count) => {
         counter = count;
-        // const element = document.querySelector('#counter');
-
-        // if (element)
-        //     element.innerHTML = `count is ${counter}`
 
         output({
             score: count,
-            speed: speed
+            msg: [`Speed: ${speed}`]
         })
         return counter;
     }
@@ -269,7 +268,7 @@ export function DoughnutStars({
     function animate() {
 
         requestAnimationFrame(animate);
-        console.log(torus.position.z)
+        // console.log(torus.position.z)
         //Move the floor backward to create the endless runner effect
         if (!stop) {
             torus.position.z += countRealSpeed();
