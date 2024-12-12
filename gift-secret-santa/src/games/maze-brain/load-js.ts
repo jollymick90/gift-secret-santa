@@ -1,7 +1,7 @@
 // Carica Box2D
 export function loadBox2D(callback) {
     const script = document.createElement('script');
-    script.src = '/assets/js/Box2dWeb.min.js'; // Percorso del file Box2D.js
+    script.src = window.location.href + '/assets/js/Box2dWeb.min.js'; // Percorso del file Box2D.js
     script.onload = callback;
     document.head.appendChild(script);
 }
