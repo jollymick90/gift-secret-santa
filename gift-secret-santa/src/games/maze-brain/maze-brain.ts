@@ -16,8 +16,12 @@ declare var jQuery: any;
 declare var $: any;
 declare var KeyboardJS: any;
 
-export function MazeBrain(_element: HTMLElement) {
-
+export function MazeBrain(
+    _element: HTMLElement,
+    output: (props: any) => void
+) {
+    let triggerTouch = 0;
+    const speedTouch = 10;
     const element = _element;
     let g: any;
     let m: any;
@@ -25,6 +29,11 @@ export function MazeBrain(_element: HTMLElement) {
     let h: any;
     let ww: any;
     let w: any;
+
+    let moveUpStart = false;
+    let moveDownStart = false;
+    let moveRighStart = false;
+    let moveLeftStart = false;
 
     var camera = undefined,
         scene = undefined,
@@ -39,9 +48,9 @@ export function MazeBrain(_element: HTMLElement) {
         ballMesh = undefined,
         ballRadius = 0.25,
         keyAxis = [0, 0],
-        ironTexture = new THREE.TextureLoader().load(ballUrl),
-        planeTexture = new THREE.TextureLoader().load(concreteUrl),
-        brickTexture = new THREE.TextureLoader().load(brickUrl),
+        ironTexture = new THREE.TextureLoader().load(window.location.href + ballUrl),
+        planeTexture = new THREE.TextureLoader().load(window.location.href + concreteUrl),
+        brickTexture = new THREE.TextureLoader().load(window.location.href + brickUrl),
         gameState = undefined,
 
         // Box2D shortcuts
@@ -92,34 +101,34 @@ export function MazeBrain(_element: HTMLElement) {
 
     function generate_maze_mesh(field: { dimension: number, [key: number]: number[] }) {
         const geometries: THREE.BufferGeometry[] = []; // Array to hold individual geometries
-    
+
         const geometry = new THREE.BoxGeometry(1, 1, 1); // Base geometry for each cube
-    
+
         for (let i = 0; i < field.dimension; i++) {
             for (let j = 0; j < field.dimension; j++) {
                 if (field[i][j]) {
                     const matrix = new THREE.Matrix4();
                     matrix.makeTranslation(i, j, 0.5); // Set position for each cube
-    
+
                     // Clone the geometry and apply the transformation
                     const cubeGeometry = geometry.clone();
                     cubeGeometry.applyMatrix4(matrix);
-    
+
                     geometries.push(cubeGeometry); // Add to array
                 }
             }
         }
-    
+
         // Merge all geometries into a single BufferGeometry
         const mergedGeometry = BufferGeometryUtils.mergeGeometries(geometries);
-    
+
         // Apply material and create the mesh
         const material = new THREE.MeshPhongMaterial({ map: brickTexture });
         const mesh = new THREE.Mesh(mergedGeometry, material);
-    
+
         return mesh; // Return the final merged mesh
     }
-    
+
 
     function createRenderWorld() {
 
@@ -221,6 +230,9 @@ export function MazeBrain(_element: HTMLElement) {
                 light.intensity = 0;
                 var level = Math.floor((mazeDimension - 1) / 2 - 4);
                 // $('#level').html('Level ' + level);
+                output({
+                    msg: ['Level ' + level]
+                })
                 gameState = 'fade in';
                 break;
 
@@ -259,6 +271,19 @@ export function MazeBrain(_element: HTMLElement) {
                 }
                 break;
 
+        }
+        triggerTouch++;
+        if ((triggerTouch % speedTouch === 0) && moveRighStart) {
+            clickRight();
+        }
+        if ((triggerTouch % speedTouch === 0) && moveLeftStart) {
+            clickLeft();
+        }
+        if ((triggerTouch % speedTouch === 0) && moveUpStart) {
+            clickUp();
+        }
+        if ((triggerTouch % speedTouch === 0) && moveDownStart) {
+            clickDown();
         }
 
         requestAnimationFrame(gameLoop);
@@ -315,17 +340,55 @@ export function MazeBrain(_element: HTMLElement) {
         gameState = 'initialize';
         requestAnimationFrame(gameLoop);
     }
-    function clickLeft() { 
+
+    function clickLeft() {
         onMoveKey([-1, 0])
     }
-    function clickRight() { 
+    
+    function clickRight() {
         onMoveKey([1, 0])
     }
-    function clickUp() { 
+
+    function clickUp() {
         onMoveKey([0, 1])
     }
-    function clickDown() { 
+
+    function clickDown() {
         onMoveKey([0, -1])
+    }
+
+    function touchStartLeft() {
+        
+        moveLeftStart = true;
+    }
+    function touchStartRight() {
+        
+        moveRighStart = true;
+    }
+    function touchStartckUp() {
+        
+        moveUpStart = true;
+    }
+    function touchStartDown() {
+        
+        moveDownStart = true;
+    }
+
+    function touchEndLeft() {
+        
+        moveLeftStart = false;
+    }
+    function touchEndRight() {
+        
+        moveRighStart = false;
+    }
+    function touchEndckUp() {
+        
+        moveUpStart = false;
+    }
+    function touchEndDown() {
+        
+        moveDownStart = false;
     }
 
     return {
@@ -333,6 +396,14 @@ export function MazeBrain(_element: HTMLElement) {
         clickLeft,
         clickRight,
         clickUp,
-        clickDown
+        clickDown,
+        touchStartLeft,
+        touchStartight: touchStartRight,
+        touchStartckUp,
+        touchStartDown,
+        touchEndLeft,
+        touchEndight: touchEndRight,
+        touchEndckUp,
+        touchEndDown
     }
 }

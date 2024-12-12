@@ -128,15 +128,34 @@ export function runArcadeControl() {
         const worldSpacerun = document.getElementById('maze');
 
         if (worldSpacerun) {
-
+            msgHtml.innerHTML = "caricamento";
             loadBox2D(() => {
+                msgHtml.innerHTML = "pronto";
                 console.log('Box2D caricato');
                 console.log("run ")
-                const maxeGame = MazeBrain(worldSpacerun);
+                const maxeGame = MazeBrain(
+                    worldSpacerun,
+                    (props: any) => {
+                        if (msgHtml && props.msg) {
+                            msgHtml.innerHTML = props.msg.join(" - ");
+                        }
+                    }
+
+                );
                 btnLeft?.addEventListener('click', maxeGame.clickLeft.bind(maxeGame));
                 btnRight?.addEventListener('click', maxeGame.clickRight.bind(maxeGame));
                 btnUp?.addEventListener('click', maxeGame.clickUp.bind(maxeGame));
                 btnDown?.addEventListener('click', maxeGame.clickDown.bind(maxeGame));
+                
+                btnLeft?.addEventListener('touchstart', maxeGame.touchStartLeft.bind(maxeGame));
+                btnRight?.addEventListener('touchstart', maxeGame.touchStartight.bind(maxeGame));
+                btnUp?.addEventListener('touchstart', maxeGame.touchStartckUp.bind(maxeGame));
+                btnDown?.addEventListener('touchstart', maxeGame.touchStartDown.bind(maxeGame));
+
+                btnLeft?.addEventListener('touchend', maxeGame.touchEndLeft.bind(maxeGame));
+                btnRight?.addEventListener('touchend', maxeGame.touchEndight.bind(maxeGame));
+                btnUp?.addEventListener('touchend', maxeGame.touchEndckUp.bind(maxeGame));
+                btnDown?.addEventListener('touchend', maxeGame.touchEndDown.bind(maxeGame));
                 maxeGame.start();
             });
             btnStop.addEventListener('click', () => {

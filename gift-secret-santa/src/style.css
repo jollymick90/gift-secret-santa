@@ -79,13 +79,21 @@ html {
   width: 100%;
   height: 100%;
   display: flex;
+  flex-direction: column;
   align-items: center;
+  gap: 1rem;
   justify-content: center;
   background-color: transparent;
   border: 3px dashed #999;
   /* visibility: hidden; /* Initially hidden */
    /*opacity: 0; /* Fully transparent initially */
   transition: visibility 0s, opacity 0.3s ease-in-out; /* Smooth fade-in/out effect */
+}
+
+.home-controls {
+  display: grid;
+  gap: 0.4rem
+
 }
 
 .hidden {
@@ -107,16 +115,38 @@ html {
   justify-content: space-around;
   align-items: center;
 }
-
+.keyboard-layout {
+  display: inline-block;
+  text-align: center;
+}
+.row {
+  display: flex;
+  justify-content: center;
+  margin: 5px 0;
+}
 .control-button {
+  width: 50px;
+  height: 50px;
+  font-size: 24px;
+  margin: 2px;
+  text-align: center;
+  cursor: pointer;
+}
+.game-select-button {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   background-color: #555;
   color: #fff;
   border: none;
-  border-radius: 50%;
-  padding: 15px;
+  border-radius: 10px;
+  padding: 5px;
   font-size: 1.5rem;
   cursor: pointer;
   transition: background-color 0.3s ease;
+}
+.game-select-button span {
+  padding-right: 10px;
 }
 
 .control-button:hover {

@@ -23,7 +23,7 @@
       </div>
       <div class="stat">
         <label>Score: <span id="score">0</span></label>
-        
+
         <div id="msg">Press any button to begin</div>
       </div>
     </header>
@@ -33,7 +33,100 @@
 
       <div id="arcade-area" class="game-screen world">
         <h1>scegli il gioco</h1>
+        <div id="home-controls" class="home-controls">
+          <button id="gameOneBtn" class="game-select-button">
+            <svg width="80" height="80" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+              <!-- Tronco -->
+              <rect x="90" y="150" width="20" height="30" fill="#8B4513" />
 
+              <!-- Livelli dell'albero -->
+              <polygon points="100,40 60,100 140,100" fill="#228B22" />
+              <polygon points="100,70 70,130 130,130" fill="#2E8B57" />
+              <polygon points="100,100 80,150 120,150" fill="#32CD32" />
+
+              <!-- Palline decorative -->
+              <circle cx="85" cy="85" r="5" fill="#FF0000" />
+              <circle cx="115" cy="90" r="5" fill="#FFD700" />
+              <circle cx="100" cy="110" r="5" fill="#00BFFF" />
+              <circle cx="90" cy="130" r="5" fill="#FFA500" />
+              <circle cx="110" cy="130" r="5" fill="#FF69B4" />
+
+              <!-- Stella in cima -->
+              <polygon points="100,30 105,45 120,45 108,55 113,70 100,60 87,70 92,55 80,45 95,45" fill="#FFD700" />
+            </svg>
+            <span>Christmas Run</span>
+          </button>
+          <button id="gameSpaceRunBtn" class="game-select-button">
+            <svg width="80" height="80" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+              <!-- Corridore Futuristico -->
+              <circle cx="100" cy="60" r="15" fill="#00BFFF" /> <!-- Casco da astronauta -->
+              <path d="M100 75 L110 120 L90 130 L85 110 L100 75" fill="#4B0082" /> <!-- Corpo -->
+              <path d="M90 130 L75 150" stroke="#4B0082" stroke-width="6" stroke-linecap="round" />
+              <!-- Gamba sinistra -->
+              <path d="M110 120 L125 140" stroke="#4B0082" stroke-width="6" stroke-linecap="round" />
+              <!-- Gamba destra -->
+              <path d="M100 90 L85 80" stroke="#4B0082" stroke-width="6" stroke-linecap="round" />
+              <!-- Braccio sinistro -->
+              <path d="M100 90 L115 85" stroke="#4B0082" stroke-width="6" stroke-linecap="round" />
+              <!-- Braccio destro -->
+
+              <!-- Propulsori ai piedi -->
+              <path d="M75 150 L70 170" stroke="#FF4500" stroke-width="4" stroke-linecap="round" />
+              <!-- Fuoco sinistro -->
+              <path d="M125 140 L130 160" stroke="#FF4500" stroke-width="4" stroke-linecap="round" />
+              <!-- Fuoco destro -->
+
+              <!-- Stelle e Pianeti -->
+              <circle cx="30" cy="40" r="6" fill="#FFD700" /> <!-- Stella luminosa -->
+              <circle cx="170" cy="60" r="8" fill="#ADFF2F" /> <!-- Pianeta verde -->
+              <circle cx="140" cy="170" r="5" fill="#FFFFFF" /> <!-- Stella bianca -->
+
+              <!-- Scia di Movimento -->
+              <path d="M85 110 C75 100, 70 90, 60 80" stroke="#00BFFF" stroke-width="3" fill="none"
+                stroke-linecap="round" />
+            </svg>
+            <span>Space Run</span>
+          </button>
+          <button id="gameDoughnutBtn" class="game-select-button">
+            <svg width="80" height="80" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+              <!-- Ciambella -->
+              <circle cx="100" cy="100" r="60" fill="#F4A460" /> <!-- Ciambella esterna -->
+              <circle cx="100" cy="100" r="30" fill="#FFFFFF" /> <!-- Buco interno -->
+
+              <!-- Glassa -->
+              <path
+                d="M40 100 C50 80, 80 70, 120 90 C140 110, 160 100, 160 100 C150 120, 120 130, 80 110 C60 90, 50 110, 40 100"
+                fill="#FF69B4" />
+
+              <!-- Stelle -->
+              <polygon points="50,50 55,65 70,65 58,75 63,90 50,80 37,90 42,75 30,65 45,65" fill="#FFD700" />
+              <polygon points="150,50 155,65 170,65 158,75 163,90 150,80 137,90 142,75 130,65 145,65" fill="#FFD700" />
+              <polygon points="100,140 105,155 120,155 108,165 113,180 100,170 87,180 92,165 80,155 95,155"
+                fill="#FFD700" />
+
+              <!-- Decorazioni zuccherate -->
+              <circle cx="80" cy="80" r="5" fill="#00BFFF" />
+              <circle cx="120" cy="100" r="5" fill="#8A2BE2" />
+              <circle cx="100" cy="120" r="5" fill="#32CD32" />
+            </svg>
+            <span></span>Doughnut Stars</span>
+          </button>
+          <button id="gameMazeBtn" class="game-select-button">
+            <svg width="80" height="80" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+              <!-- Labirinto principale -->
+              <rect x="40" y="40" width="120" height="120" fill="none" stroke="#000000" stroke-width="8" />
+            
+              <!-- Percorsi interni -->
+              <path d="M60 60 H120 V80 H80 V100 H140 V140 H60 V100 H100 V60 Z" 
+                    fill="none" stroke="#000000" stroke-width="8" />
+            
+              <!-- Nodo centrale (opzionale) -->
+              <circle cx="100" cy="100" r="5" fill="#FF0000" />
+            </svg>
+            
+            <span> Maze Brain</span>
+          </button>
+        </div>
       </div>
       <div id="world" class="game-screen world hidden">
 
@@ -42,32 +135,33 @@
 
       </div>
       <div id="doughnut" class="game-screen world hidden">
-      
+
       </div>
       <div id="maze" class="game-screen world hidden">
-      
+
       </div>
     </main>
     <footer class="footer">
 
       <div class="controls">
-        <div id="home-controls">
-          <button id="gameOneBtn" class="control-button">Christmas Run</button>
-          <button id="gameSpaceRunBtn" class="control-button">Space Run</button>
-          <button id="gameDoughnutBtn" class="control-button">Doughnut Stars</button>
-          <button id="gameMazeBtn" class="control-button">Maze Brain</button>
-        </div>
-        <div id="game-controls" class="hidden">
-          <button id="btnLeft" class="control-button">⬅️</button>
-          <button id="btnUp" class="control-button">⬆️</button>
-          <button id="btnRight" class="control-button">➡️</button>
-          <button id="btnDown" class="control-button">⬇️</button>
-          <button id="btnStop" class="control-button">⏺️</button>
+
+        <div id="game-controls" class="keyboard-layout">
+          <div class="row">
+            <button id="btnUp" class="control-button">⬆️</button>
+          </div>
+          <div class="row">
+            <button id="btnLeft" class="control-button">⬅️</button>
+            <button id="btnStop" class="control-button">⏺️</button>
+            <button id="btnRight" class="control-button">➡️</button>
+          </div>
+          <div class="row">
+            <button id="btnDown" class="control-button">⬇️</button>
+          </div>
         </div>
       </div>
     </footer>
   </div>
-  
+
   <script type="module" src="/src/main.ts"></script>
 </body>
 
