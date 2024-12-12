@@ -81,7 +81,7 @@ html {
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #e0e0e0;
+  background-color: transparent;
   border: 3px dashed #999;
   /* visibility: hidden; /* Initially hidden */
    /*opacity: 0; /* Fully transparent initially */

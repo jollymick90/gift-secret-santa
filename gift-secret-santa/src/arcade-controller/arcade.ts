@@ -1,7 +1,7 @@
-import { World } from "../games/boxy-run/boxy-run-original";
-import { DoughnutStars } from "../games/doughnut-stars/doughut-stars";
-import { MazeBrain } from "../games/maze-brain/maze-brain";
-import { Game } from "../games/starship-run/game";
+import { World } from '../games/boxy-run/boxy-run-original';
+import { DoughnutStars } from '../games/doughnut-stars/doughut-stars';
+import { MazeBrain } from '../games/maze-brain/maze-brain';
+import { Game } from '../games/starship-run/game';
 
 let game: Game | null = null;
 export function runArcadeControl() {
@@ -45,10 +45,15 @@ export function runArcadeControl() {
         const btnLeft = document.getElementById('btnLeft');
         const rightLeft = document.getElementById('btnRight');
         if (worldSpacerun) {
-            game = new Game(worldSpacerun);
+            game = new Game({
+                _element: worldSpacerun,
+                output: (prop) => {
+                    console.log("prop", prop);
+                }
+            });
             game.init();
-            game.setOnPause(() => { })
-            game.setOnResume(() => { })
+            game.setOnPause(() => { });
+            game.setOnResume(() => { });
             game.setOnCollisionDetected((score: number) => { })
             game.setOnScoreChanged((score: number) => { })
             btnLeft?.addEventListener('click', game.clickLeft.bind(game));

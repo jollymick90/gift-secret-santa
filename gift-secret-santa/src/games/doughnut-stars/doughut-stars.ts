@@ -1,6 +1,7 @@
 // game.js
 
 import * as THREE from 'three';
+
 declare var Hands: any;
 type DoughnutStarsOutProps = {
     score: number,
@@ -21,11 +22,11 @@ export function DoughnutStars({
 
     // Setup basic scene
     let scene = new THREE.Scene();
-    let camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    let camera = new THREE.PerspectiveCamera(75, element.clientWidth / element.clientHeight, 0.1, 1000);
     let renderer = new THREE.WebGLRenderer();
 
     renderer.setSize(
-        element.clientWidth, 
+        element.clientWidth,
         element.clientHeight
     );
     element.appendChild(renderer.domElement);
@@ -64,249 +65,249 @@ export function DoughnutStars({
 
     player.rotation.x = Math.PI / 2; // Ruota il disco in modo che sia perpendicolare all'asse Z
     player.position.z = -10; // Posiziona il disco indietro rispetto al torus
-    scene.add(player);
+    // scene.add(player);
 
-    camera.position.z = 5;
-
-
-    // per interrompere la navigazione della ciambella
-    let stop = false;
-    // per evitare i conteggi doppi quando la pallina passa dentro la ciambella
-    let trigger = false;
-    // per resettare il centro della ciambella al reset
-    let resetInitialTorus = false;
-    let stepSpeed = 5;
-    let speed = 5;
+    // camera.position.z = 5;
 
 
-    // Configura la webcam
-    // const videoElement = document.createElement('video');
-    // videoElement.style.display = "none";
-    // document.body.appendChild(videoElement);
-    // Configura la webcam
-    
-    // const videoElement: any = document.getElementById('videoElement');
-    // const canvasOverlay: any = document.getElementById('canvasOverlay');
-    // const ctx = canvasOverlay?.getContext('2d');
+    // // per interrompere la navigazione della ciambella
+    // let stop = false;
+    // // per evitare i conteggi doppi quando la pallina passa dentro la ciambella
+    // let trigger = false;
+    // // per resettare il centro della ciambella al reset
+    // let resetInitialTorus = false;
+    // let stepSpeed = 5;
+    // let speed = 5;
 
-    // Funzione per calcolare il riquadro di delimitazione della mano
-    // function getBoundingBox(landmarks) {
-    //     let xMin = Infinity, xMax = -Infinity, yMin = Infinity, yMax = -Infinity;
 
-    //     for (const landmark of landmarks) {
-    //         const x = landmark.x * canvasOverlay.width;
-    //         const y = landmark.y * canvasOverlay.height;
+    // // Configura la webcam
+    // // const videoElement = document.createElement('video');
+    // // videoElement.style.display = "none";
+    // // document.body.appendChild(videoElement);
+    // // Configura la webcam
 
-    //         if (x < xMin) xMin = x;
-    //         if (x > xMax) xMax = x;
-    //         if (y < yMin) yMin = y;
-    //         if (y > yMax) yMax = y;
+    // // const videoElement: any = document.getElementById('videoElement');
+    // // const canvasOverlay: any = document.getElementById('canvasOverlay');
+    // // const ctx = canvasOverlay?.getContext('2d');
+
+    // // Funzione per calcolare il riquadro di delimitazione della mano
+    // // function getBoundingBox(landmarks) {
+    // //     let xMin = Infinity, xMax = -Infinity, yMin = Infinity, yMax = -Infinity;
+
+    // //     for (const landmark of landmarks) {
+    // //         const x = landmark.x * canvasOverlay.width;
+    // //         const y = landmark.y * canvasOverlay.height;
+
+    // //         if (x < xMin) xMin = x;
+    // //         if (x > xMax) xMax = x;
+    // //         if (y < yMin) yMin = y;
+    // //         if (y > yMax) yMax = y;
+    // //     }
+
+    // //     return {
+    // //         x: xMin,
+    // //         y: yMin,
+    // //         width: xMax - xMin,
+    // //         height: yMax - yMin,
+    // //     };
+    // // }
+
+
+    // // Funzione per avviare la webcam
+    // // async function startCamera() {
+    // //     const stream = await navigator.mediaDevices.getUserMedia({
+    // //         video: true
+    // //     });
+    // //     videoElement.srcObject = stream;
+    // //     await videoElement.play();
+    // // }
+
+
+    // // Setup MediaPipe Hands
+    // const hands = new Hands({
+    //     locateFile: (file) => {
+    //         return `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`;
     //     }
+    // });
 
-    //     return {
-    //         x: xMin,
-    //         y: yMin,
-    //         width: xMax - xMin,
-    //         height: yMax - yMin,
-    //     };
+    // hands.setOptions({
+    //     maxNumHands: 1,
+    //     modelComplexity: 1,
+    //     minDetectionConfidence: 0.5,
+    //     minTrackingConfidence: 0.5
+    // });
+
+    // hands.onResults(onResults);
+
+    // // const model = handPoseDetection.SupportedModels.MediaPipeHands;
+    // // const detectorConfig = {
+    // //   runtime: 'mediapipe', // or 'tfjs'
+    // //   modelType: 'full'
+    // // };
+
+
+    // // const detector = await handPoseDetection.createDetector(model, detectorConfig);
+    // // const video = document.getElementById('video');
+    // // const hands2 = await detector.estimateHands(video);
+
+    // // Funzione per gestire i risultati del rilevamento delle mani
+    // function onResults(results) {
+    //     // Pulisci il canvas overlay
+    //     // ctx.clearRect(0, 0, canvasOverlay.width, canvasOverlay.height);
+
+    //     if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
+    //         const landmarks = results.multiHandLandmarks[0];
+
+    //         // Usa il punto di riferimento per il polso per ottenere la posizione della mano
+    //         const wrist = landmarks[0];
+    //         const x = (wrist.x - 0.5) * 20; // Trasforma la posizione da -10 a 10
+    //         const y = (0.5 - wrist.y) * 20; // Trasforma la posizione da -10 a 10
+    //         //console.log("old",player.position.x , player.position.y, "new", x,y)
+    //         // Aggiorna la posizione della sfera basata sul movimento della mano
+    //         player.position.x = x;
+    //         player.position.y = y;
+
+    //         // ctx.strokeStyle = 'red';
+    //         // ctx.lineWidth = 2;
+    //         // const boundingBox = getBoundingBox(landmarks);
+    //         // ctx.strokeRect(boundingBox.x, boundingBox.y, boundingBox.width, boundingBox.height);
+
+    //     }
     // }
 
 
-    // Funzione per avviare la webcam
-    // async function startCamera() {
-    //     const stream = await navigator.mediaDevices.getUserMedia({
-    //         video: true
-    //     });
-    //     videoElement.srcObject = stream;
-    //     await videoElement.play();
+    // const printSpeed = () => {
+    //     const element = document.querySelector('#speed');
+
+    //     if (element)
+    //         element.innerHTML = `speed is ${speed}`
     // }
 
+    // const updateCounter = (count) => {
+    //     counter = count;
+    //     // const element = document.querySelector('#counter');
 
-    // Setup MediaPipe Hands
-    const hands = new Hands({
-        locateFile: (file) => {
-            return `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`;
-        }
-    });
+    //     // if (element)
+    //     //     element.innerHTML = `count is ${counter}`
 
-    hands.setOptions({
-        maxNumHands: 1,
-        modelComplexity: 1,
-        minDetectionConfidence: 0.5,
-        minTrackingConfidence: 0.5
-    });
+    //     output({
+    //         score: count,
+    //         speed: speed
+    //     })
+    //     return counter;
+    // }
+    // function resetTorusPosition() {
+    //     torus.position.z = -50; // Riposiziona il torus più indietro lungo l'asse Z
+    //     if (resetInitialTorus) {
+    //         torus.position.x = 0;
+    //         torus.position.y = 0;
+    //         resetInitialTorus = false;
+    //     } else {
+    //         torus.position.x = (Math.random() - 0.5) * 10; // Nuova posizione casuale lungo l'asse X (-5 a 5)
+    //         torus.position.y = (Math.random() - 0.5) * 10; // Nuova posizione casuale lungo l'asse Y (-5 a 5)
+    //     }
+    // }
+    // function detectIntersection() {
+    //     // Calcola la distanza tra il centro del disco e il centro del torus
+    //     const distanceXY = Math.sqrt(
+    //         Math.pow(player.position.x - torus.position.x, 2) +
+    //         Math.pow(player.position.y - torus.position.y, 2)
+    //     );
 
-    hands.onResults(onResults);
+    //     // Parametri del torus
+    //     const torusInnerRadius = 1.5; // Raggio interno del torus (dove il disco può passare)
 
-    // const model = handPoseDetection.SupportedModels.MediaPipeHands;
-    // const detectorConfig = {
-    //   runtime: 'mediapipe', // or 'tfjs'
-    //   modelType: 'full'
-    // };
+    //     // Controllo di intersezione lungo Z e se il disco è dentro il raggio del buco del torus
+    //     if (
+    //         Math.abs(player.position.z - torus.position.z) < 0.1 && // Se sono abbastanza vicini lungo l'asse Z
+    //         distanceXY < torusInnerRadius // Se il disco è all'interno del raggio interno del torus
+    //     ) {
+    //         console.log("Il disco è passato attraverso la ciambella!");
+    //         if (!trigger) {
+    //             speed = speed + stepSpeed;
+    //             updateCounter(counter + 1);
+    //             trigger = true;
+    //         }
+    //     }
+    // }
 
+    // function countRealSpeed() {
+    //     return speed / 100;
+    // }
 
-    // const detector = await handPoseDetection.createDetector(model, detectorConfig);
-    // const video = document.getElementById('video');
-    // const hands2 = await detector.estimateHands(video);
-
-    // Funzione per gestire i risultati del rilevamento delle mani
-    function onResults(results) {
-        // Pulisci il canvas overlay
-        // ctx.clearRect(0, 0, canvasOverlay.width, canvasOverlay.height);
-
-        if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
-            const landmarks = results.multiHandLandmarks[0];
-
-            // Usa il punto di riferimento per il polso per ottenere la posizione della mano
-            const wrist = landmarks[0];
-            const x = (wrist.x - 0.5) * 20; // Trasforma la posizione da -10 a 10
-            const y = (0.5 - wrist.y) * 20; // Trasforma la posizione da -10 a 10
-            //console.log("old",player.position.x , player.position.y, "new", x,y)
-            // Aggiorna la posizione della sfera basata sul movimento della mano
-            player.position.x = x;
-            player.position.y = y;
-
-            // ctx.strokeStyle = 'red';
-            // ctx.lineWidth = 2;
-            // const boundingBox = getBoundingBox(landmarks);
-            // ctx.strokeRect(boundingBox.x, boundingBox.y, boundingBox.width, boundingBox.height);
-
-        }
-    }
-
-
-    const printSpeed = () => {
-        const element = document.querySelector('#speed');
-
-        if (element)
-            element.innerHTML = `speed is ${speed}`
-    }
-
-    const updateCounter = (count) => {
-        counter = count;
-        // const element = document.querySelector('#counter');
-
-        // if (element)
-        //     element.innerHTML = `count is ${counter}`
-
-        output({
-            score: count,
-            speed: speed
-        })
-        return counter;
-    }
-    function resetTorusPosition() {
-        torus.position.z = -50; // Riposiziona il torus più indietro lungo l'asse Z
-        if (resetInitialTorus) {
-            torus.position.x = 0;
-            torus.position.y = 0;
-            resetInitialTorus = false;
-        } else {
-            torus.position.x = (Math.random() - 0.5) * 10; // Nuova posizione casuale lungo l'asse X (-5 a 5)
-            torus.position.y = (Math.random() - 0.5) * 10; // Nuova posizione casuale lungo l'asse Y (-5 a 5)
-        }
-    }
-    function detectIntersection() {
-        // Calcola la distanza tra il centro del disco e il centro del torus
-        const distanceXY = Math.sqrt(
-            Math.pow(player.position.x - torus.position.x, 2) +
-            Math.pow(player.position.y - torus.position.y, 2)
-        );
-
-        // Parametri del torus
-        const torusInnerRadius = 1.5; // Raggio interno del torus (dove il disco può passare)
-
-        // Controllo di intersezione lungo Z e se il disco è dentro il raggio del buco del torus
-        if (
-            Math.abs(player.position.z - torus.position.z) < 0.1 && // Se sono abbastanza vicini lungo l'asse Z
-            distanceXY < torusInnerRadius // Se il disco è all'interno del raggio interno del torus
-        ) {
-            console.log("Il disco è passato attraverso la ciambella!");
-            if (!trigger) {
-                speed = speed + stepSpeed;
-                updateCounter(counter + 1);
-                trigger = true;
-            }
-        }
-    }
-
-    function countRealSpeed() {
-        return speed / 100;
-    }
-
-    window.addEventListener('resize', () => {
-        camera.aspect = window.innerWidth / window.innerHeight;
-        camera.updateProjectionMatrix();
-        renderer.setSize(window.innerWidth, window.innerHeight);
-    });
+    // window.addEventListener('resize', () => {
+    //     camera.aspect = window.innerWidth / window.innerHeight;
+    //     camera.updateProjectionMatrix();
+    //     renderer.setSize(window.innerWidth, window.innerHeight);
+    // });
 
     function keyDown(code: string) {
-        if (code === 'KeyS') {
-            stop = !stop;
-            console.log("s", stop);
-        } else if (code === 'KeyA') {
-            speed = speed + stepSpeed;
-            printSpeed();
-        } else if (code === 'KeyD') {
-            speed = speed - stepSpeed;
-            printSpeed();
-        } else if (code === 'KeyR') {
-            resetInitialTorus = true;
-        }
+        // if (code === 'KeyS') {
+        //     stop = !stop;
+        //     console.log("s", stop);
+        // } else if (code === 'KeyA') {
+        //     speed = speed + stepSpeed;
+        //     printSpeed();
+        // } else if (code === 'KeyD') {
+        //     speed = speed - stepSpeed;
+        //     printSpeed();
+        // } else if (code === 'KeyR') {
+        //     resetInitialTorus = true;
+        // }
 
-        else if (code === 'ArrowLeft') {
-            player.position.x -= 1; // Move left
-        } else if (code === 'ArrowRight') {
-            player.position.x += 1; // Move right
-        } else if (code === 'ArrowUp') {
-            player.position.y += 1; // Move Up
-        } else if (code === 'ArrowDown') {
-            player.position.y -= 1; // Move Down
-        }
+        // else if (code === 'ArrowLeft') {
+        //     player.position.x -= 1; // Move left
+        // } else if (code === 'ArrowRight') {
+        //     player.position.x += 1; // Move right
+        // } else if (code === 'ArrowUp') {
+        //     player.position.y += 1; // Move Up
+        // } else if (code === 'ArrowDown') {
+        //     player.position.y -= 1; // Move Down
+        // }
     }
 
     function animate() {
-        
-        requestAnimationFrame(animate);
+
+        // requestAnimationFrame(animate);
         // console.log(torus.position.z)
         // Move the floor backward to create the endless runner effect
-        if (!stop) {
-            torus.position.z += countRealSpeed();
-        }
+        // if (!stop) {
+        //     torus.position.z += countRealSpeed();
+        // }
 
-        // Update camera position or controls
-        detectIntersection();
+        // // Update camera position or controls
+        // detectIntersection();
 
-        if (torus.position.z > camera.position.z + 5) {
-            trigger = false;
-            resetTorusPosition();
-        }
+        // if (torus.position.z > camera.position.z + 5) {
+        //     trigger = false;
+        //     resetTorusPosition();
+        // }
 
-        // Movimento delle stelle verso la camera
-        stars.position.z += 0.1;
+        // // Movimento delle stelle verso la camera
+        // stars.position.z += 0.1;
 
-        // Se le stelle hanno superato un certo punto, riportale indietro
-        if (stars.position.z > 50) {
-            stars.position.z = -50;
-        }
+        // // Se le stelle hanno superato un certo punto, riportale indietro
+        // if (stars.position.z > 50) {
+        //     stars.position.z = -50;
+        // }
 
         renderer.render(scene, camera);
     }
 
-    function clickLeft() { 
+    function clickLeft() {
         keyDown('ArrowLeft')
     }
-    function clickRight() { 
+    function clickRight() {
         keyDown('ArrowRight')
     }
-    function clickUp() { 
+    function clickUp() {
         keyDown('ArrowUp')
     }
-    function clickDown() { 
+    function clickDown() {
         keyDown('ArrowDown')
     }
 
-    
+
     return {
         animate,
         clickLeft,

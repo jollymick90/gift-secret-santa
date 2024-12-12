@@ -1,7 +1,14 @@
 import * as THREE from 'three';
-import * as BufferGeometryUtils from 'three/addons/utils/BufferGeometryUtils.js';
+import * as BufferGeometryUtils
+  from 'three/addons/utils/BufferGeometryUtils.js';
+
+import {
+  ballUrl,
+  brickUrl,
+  concreteUrl,
+} from '../../assets';
 import { generateSquareMaze } from './maze';
-import { ballUrl, brickUrl, concreteUrl } from '../../assets';
+
 // import { Box2D } from '../../vendor';
 
 declare var Box2D: any;

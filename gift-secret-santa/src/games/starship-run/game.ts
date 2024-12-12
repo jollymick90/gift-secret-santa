@@ -1,10 +1,11 @@
 import * as THREE from 'three';
+
+import { Asteroid } from './asteroid';
 import { Character } from './character';
 import { Colors } from './constant';
+import { GameObject } from './game.model';
 import { Tree } from './tree';
 import { createBox } from './ui-utils';
-import { GameObject } from './game.model';
-import { Asteroid } from './asteroid';
 
 // Start receiving feedback from the player.
 const left = 37;
@@ -18,6 +19,16 @@ type RowOfTreeProp = {
 	probability: number;
 	minScale: number;
 	maxScale: number;
+}
+
+type StarshipRunOutProps = {
+    score?: number,
+    speed?: number,
+	msg?: string
+}
+type StarshipRunProps = {
+    _element: HTMLElement,
+    output: (prop: StarshipRunOutProps) => void
 }
 export class Game {
 
@@ -36,14 +47,16 @@ export class Game {
 	maxTreeSize: any;
 	gameOver: any;
 	fogDistance: number;
+	_output: (prop: StarshipRunOutProps) => void
 
 	private onPause: () => void = () => { console.warn("noPauseDefined"); };
 	private onResume: () => void = () => { console.warn("noResumeDefined"); };
 	private onCollisionDetected: (score: number) => void = (score: number) => { console.warn("onCollisionDetected") }
 	private onScoreChanged: (score: number) => void = (score: number) => { console.warn("onCollisionDetected") }
 
-	constructor(_element: HTMLElement) {
-		this.element = _element;
+	constructor(prop: StarshipRunProps) {
+		this.element = prop._element;
+		this._output = prop.output;
 
 		this.renderer = new THREE.WebGLRenderer({
 			alpha: true,
@@ -54,13 +67,16 @@ export class Game {
 			this.element.clientWidth,
 			this.element.clientHeight
 		);
-		this.renderer.shadowMap.enabled = true;
+		// this.renderer.shadowMap.enabled = true;
 
 		this.element.appendChild(this.renderer.domElement);
 
 		this.scene = new THREE.Scene();
+
+		this.addStarsBackground(this.scene);
+
 		this.fogDistance = 40000;
-		this.scene.fog = new THREE.Fog(0x00CCEE, 1, this.fogDistance);
+		this.scene.fog = new THREE.Fog(0xFFFFFF, 1, this.fogDistance);
 		// Initialize the camera with field of view, aspect ratio,
 		// near plane, and far plane.
 		this.camera = new THREE.PerspectiveCamera(
@@ -71,50 +87,75 @@ export class Game {
 		);
 		this.camera.position.set(0, 1500, -2000);
 		this.camera.lookAt(new THREE.Vector3(0, 600, -5000));
-		(window as any).camera = this.camera;
+		// (window as any).camera = this.camera;
 
-		// Set up resizing capabilities.
+		// // Set up resizing capabilities.
 		window.addEventListener('resize', this.handleWindowResize.bind(this), false);
 
-		// Initialize the lights.
-		this.light = new THREE.HemisphereLight(0xffffff, 0xffffff, 1);
+		// // Initialize the lights.
+		this.light = new THREE.HemisphereLight(0xFFFFFF,0xFFFFFF, 1);
 		this.scene.add(this.light);
 
-		// Initialize the character and add it to the scene.
+		// // Initialize the character and add it to the scene.
+
+		this.addPlayer(this.scene);
+		this.addStreet(this.scene);
+		
+
+		// this.objects = [];
+		// this.treePresenceProb = 0.2;
+		// this.maxTreeSize = 0.5;
+		// this.createInitialCollisionObject()
+
+		// // The game is paused to begin with and the game is not over.
+		// this.gameOver = false;
+		// this.paused = true;
+
+		// this.keysAllowed = {};
+
+		// // Initialize the scores and difficulty.
+		// this.score = 0;
+		// this.difficulty = 0;
+
+		// document.addEventListener(
+		// 	'keydown',
+		// 	this.onKeyDown
+		// );
+		// document.addEventListener(
+		// 	'keyup',
+		// 	this.keyUp
+		// );
+		// document.addEventListener(
+		// 	'focus',
+		// 	this.onFocus
+		// );
+	}
+	addStreet(scene: any) {
+		let ground = createBox(3000, 20, 120000, Colors.sand, 0, -400, -60000);
+		scene.add(ground);
+	}
+
+	addPlayer(scene: any) {
 		this.character = new Character();
 		this.character.init();
-		this.scene.add(this.character.element);
+		scene.add(this.character.element);
+	}
 
-		let ground = createBox(3000, 20, 120000, Colors.sand, 0, -400, -60000);
-		this.scene.add(ground);
+	private addStarsBackground(scene: any) {
+		const starGeometry = new THREE.BufferGeometry();
+		const starMaterial = new THREE.PointsMaterial({ color: 0xffffff });
+		const starVertices: number[] = [];
 
-		this.objects = [];
-		this.treePresenceProb = 0.2;
-		this.maxTreeSize = 0.5;
-		this.createInitialCollisionObject()
+		for (let i = 0; i < 1000; i++) {
+			const x = (Math.random() - 0.5) * 200;
+			const y = (Math.random() - 0.5) * 200;
+			const z = (Math.random() - 0.5) * 200;
+			starVertices.push(x, y, z);
+		}
 
-		// The game is paused to begin with and the game is not over.
-		this.gameOver = false;
-		this.paused = true;
-
-		this.keysAllowed = {};
-
-		// Initialize the scores and difficulty.
-		this.score = 0;
-		this.difficulty = 0;
-
-		document.addEventListener(
-			'keydown',
-			this.onKeyDown
-		);
-		document.addEventListener(
-			'keyup',
-			this.keyUp
-		);
-		document.addEventListener(
-			'focus',
-			this.onFocus
-		);
+		starGeometry.setAttribute('position', new THREE.Float32BufferAttribute(starVertices, 3));
+		const stars = new THREE.Points(starGeometry, starMaterial);
+		scene.add(stars);
 	}
 
 	setOnPause(_onPause: () => void) {
@@ -154,88 +195,88 @@ export class Game {
 	loop() {
 
 		// Update the game.
-		if (!this.paused) {
+		// if (!this.paused) {
 
-			// Add more trees and increase the difficulty.
-			const meshPositionCondition = this.objects.length > 0 && ((this.objects[this.objects.length - 1].mesh.position.z) % 3000 === 0);
-			if (meshPositionCondition) {
-				this.difficulty += 1;
-				const levelLength = 30;
-				if (this.difficulty % levelLength == 0) {
-					const level = this.difficulty / levelLength;
-					switch (level) {
-						case 1:
-							this.treePresenceProb = 0.35;
-							this.maxTreeSize = 0.5;
-							break;
-						case 2:
-							this.treePresenceProb = 0.35;
-							this.maxTreeSize = 0.85;
-							break;
-						case 3:
-							this.treePresenceProb = 0.5;
-							this.maxTreeSize = 0.85;
-							break;
-						case 4:
-							this.treePresenceProb = 0.5;
-							this.maxTreeSize = 1.1;
-							break;
-						case 5:
-							this.treePresenceProb = 0.5;
-							this.maxTreeSize = 1.1;
-							break;
-						case 6:
-							this.treePresenceProb = 0.55;
-							this.maxTreeSize = 1.1;
-							break;
-						default:
-							this.treePresenceProb = 0.55;
-							this.maxTreeSize = 1.25;
-					}
-				}
-				if ((this.difficulty >= 5 * levelLength && this.difficulty < 6 * levelLength)) {
-					this.fogDistance -= (25000 / levelLength);
-				} else if (this.difficulty >= 8 * levelLength && this.difficulty < 9 * levelLength) {
-					this.fogDistance -= (5000 / levelLength);
-				}
-				this.createRowOfAsteroid({
-					position: -120000, 
-					probability: this.treePresenceProb, 
-					minScale: 0.5, 
-					maxScale: this.maxTreeSize
-				});
-				this.scene.fog.far = this.fogDistance;
-			}
+		// 	// Add more trees and increase the difficulty.
+		// 	const meshPositionCondition = this.objects.length > 0 && ((this.objects[this.objects.length - 1].mesh.position.z) % 3000 === 0);
+		// 	if (meshPositionCondition) {
+		// 		this.difficulty += 1;
+		// 		const levelLength = 30;
+		// 		if (this.difficulty % levelLength == 0) {
+		// 			const level = this.difficulty / levelLength;
+		// 			switch (level) {
+		// 				case 1:
+		// 					this.treePresenceProb = 0.35;
+		// 					this.maxTreeSize = 0.5;
+		// 					break;
+		// 				case 2:
+		// 					this.treePresenceProb = 0.35;
+		// 					this.maxTreeSize = 0.85;
+		// 					break;
+		// 				case 3:
+		// 					this.treePresenceProb = 0.5;
+		// 					this.maxTreeSize = 0.85;
+		// 					break;
+		// 				case 4:
+		// 					this.treePresenceProb = 0.5;
+		// 					this.maxTreeSize = 1.1;
+		// 					break;
+		// 				case 5:
+		// 					this.treePresenceProb = 0.5;
+		// 					this.maxTreeSize = 1.1;
+		// 					break;
+		// 				case 6:
+		// 					this.treePresenceProb = 0.55;
+		// 					this.maxTreeSize = 1.1;
+		// 					break;
+		// 				default:
+		// 					this.treePresenceProb = 0.55;
+		// 					this.maxTreeSize = 1.25;
+		// 			}
+		// 		}
+		// 		if ((this.difficulty >= 5 * levelLength && this.difficulty < 6 * levelLength)) {
+		// 			this.fogDistance -= (25000 / levelLength);
+		// 		} else if (this.difficulty >= 8 * levelLength && this.difficulty < 9 * levelLength) {
+		// 			this.fogDistance -= (5000 / levelLength);
+		// 		}
+		// 		this.createRowOfAsteroid({
+		// 			position: -120000, 
+		// 			probability: this.treePresenceProb, 
+		// 			minScale: 0.5, 
+		// 			maxScale: this.maxTreeSize
+		// 		});
+		// 		this.scene.fog.far = this.fogDistance;
+		// 	}
 
-			// Move the trees closer to the character.
-			this.objects.forEach(function (object) {
-				object.mesh.position.z += 100;
-			});
+		// 	// Move the trees closer to the character.
+		// 	this.objects.forEach(function (object) {
+		// 		object.mesh.position.z += 100;
+		// 	});
 
-			// Remove trees that are outside of the world.
-			this.objects = this.objects.filter(function (object) {
-				return object.mesh.position.z < 0;
-			});
+		// 	// Remove trees that are outside of the world.
+		// 	this.objects = this.objects.filter(function (object) {
+		// 		return object.mesh.position.z < 0;
+		// 	});
 
-			// Make the character move according to the controls.
-			this.character.update();
+		// 	// Make the character move according to the controls.
+		// 	this.character.update();
 
-			// Check for collisions between the character and objects.
-			if (this.collisionsDetected()) {
-				this.gameOver = true;
-				this.paused = true;
+		// 	// Check for collisions between the character and objects.
+		// 	if (this.collisionsDetected()) {
+		// 		this.gameOver = true;
+		// 		this.paused = true;
 
-				this.onCollisionDetected(this.score / 15000);
-			}
+		// 		this.onCollisionDetected(this.score / 15000);
+		// 	}
 
-			// Update the scores.
-			this.score += 10;
-			this.onScoreChanged(this.score);
-		}
+		// 	// Update the scores.
+		// 	this.score += 10;
+		// 	this.onScoreChanged(this.score);
+		// }
 
 		// Render the page and repeat.
 		this.renderer.render(this.scene, this.camera);
-		requestAnimationFrame(this.loop.bind(this));
+		// requestAnimationFrame(this.loop.bind(this));
 	}
 
 	private createInitialCollisionObject() {
