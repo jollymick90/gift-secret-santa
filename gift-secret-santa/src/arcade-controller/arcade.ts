@@ -20,6 +20,7 @@ export function runArcadeControl() {
     const btnStop = document.getElementById('btnStop');
     const scoreHtml = document.getElementById('score');
     const msgHtml = document.getElementById('msg');
+    const indoPointHtml = document.getElementById('info-point');
 
     function handleGameOne() {
         console.log("click game 1");
@@ -27,6 +28,7 @@ export function runArcadeControl() {
         gameControls?.classList.remove('hidden');
 
         gameOne?.classList.remove('hidden');
+        indoPointHtml?.classList.remove('hidden');
 
         arcadeArea?.classList.add('hidden');
         gameDoughut?.classList.add('hidden');
@@ -54,6 +56,7 @@ export function runArcadeControl() {
         gameControls?.classList.remove('hidden');
 
         arcadeArea?.classList.add('hidden');
+        indoPointHtml?.classList.remove('hidden');
 
         gameSpace?.classList.remove('hidden');
         gameDoughut?.classList.add('hidden');
@@ -115,6 +118,7 @@ export function runArcadeControl() {
         gameControls?.classList.remove('hidden');
 
         gameMaze?.classList.remove('hidden');
+        indoPointHtml?.classList.remove('hidden');
 
         arcadeArea?.classList.add('hidden');
         gameSpace?.classList.add('hidden');
@@ -174,7 +178,8 @@ export function runArcadeControl() {
         gameControls?.classList.remove('hidden');
 
         gameDoughut?.classList.remove('hidden');
-
+        indoPointHtml?.classList.remove('hidden');
+        
         gameMaze?.classList.add('hidden');
         arcadeArea?.classList.add('hidden');
         gameSpace?.classList.add('hidden');

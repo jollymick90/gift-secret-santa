@@ -8,6 +8,8 @@ import { Tree } from './tree';
 import { createBox } from './ui-utils';
 
 // Start receiving feedback from the player.
+
+const stringThanks = "We thank Wan Fung Chui for the inspiration."
 const left = 37;
 const up = 38;
 const right = 39;
@@ -73,6 +75,7 @@ class GroundSegment implements GameObject {
 }
 export class Game {
 
+	isFallIntoGap: boolean = false;
 	element: any;
 	scene: any;
 	camera: any;
@@ -93,9 +96,11 @@ export class Game {
 	holePositions: { [zPos: number]: boolean } = {};
 	obstacolePosition: { [zPos: number]: boolean } = {};
 
-	typeOfObstacole: 'ast' | 'gap' = 'ast';
-
+	typeOfObstacole: 'ast' | 'tree' = 'ast';
+	
 	_output: (prop: StarshipRunOutProps) => void
+
+	timer: number = 0;
 
 	private onPause: () => void = () => { console.warn("noPauseDefined"); };
 	private onResume: () => void = () => { console.warn("noResumeDefined"); };
@@ -274,6 +279,12 @@ export class Game {
 	  * The main animation loop.
 	  */
 	loop() {
+		this.timer++;
+		if (this.timer > 50 && this.timer < 100) {
+			this._output({
+				msg:[stringThanks]
+			})
+		}
 		// Update the game.
 		if (!this.paused) {
 			// Add more trees and increase the difficulty.
@@ -283,13 +294,7 @@ export class Game {
 
 				this.calculateFogDistance();
 				// Alterna il tipo di ostacolo
-				if (this.typeOfObstacole === 'gap') {
-					this.typeOfObstacole = 'ast';
-					console.log("this.change", this.typeOfObstacole)
-				} else {
-					this.typeOfObstacole = 'gap';
-					console.log("this.change", this.typeOfObstacole)
-				}
+				
 				let newPos = -120000;
 				this.createRowOfAsteroid({
 					position: newPos,
@@ -333,7 +338,9 @@ export class Game {
 
 			// Check for collisions between the character and objects.
 			// Controlliamo collisioni e gap
+
 			if (this.checkFallIntoGap()) {
+				this.isFallIntoGap = true;
 				// this.gameOver = true;
 				// this.paused = true;
 				this.onCollisionDetected({
@@ -343,8 +350,12 @@ export class Game {
 			} else if (this.collisionsDetected()) {
 				this.gameOver = true;
 				this.paused = true;
-				this.endOfGame();
+				this.printInfo();
+			} 
+			if (!this.isFallIntoGap && this.timer % 150 === 0) {
+				this.printInfo(false)
 			}
+			
 
 			// Update the scores.
 			this.score += 10;
@@ -355,8 +366,8 @@ export class Game {
 		this.renderer.render(this.scene, this.camera);
 		requestAnimationFrame(this.loop.bind(this));
 	}
-	endOfGame() {
-		const textOutput = "Game over!";
+	printInfo(endOfGame: boolean = true) {
+		const textOutput = endOfGame ? "Game over!" : "";
 		let rankNames = ["Typical Engineer", "Couch Potato", "Weekend Jogger", "Daily Runner",
 			"Local Prospect", "Regional Star", "National Champ", "Second Mo Farah"];
 		let rankIndex = Math.floor(this.score / 15000);
@@ -458,6 +469,8 @@ export class Game {
 				minScale: 0.5,
 				maxScale: this.maxTreeSize
 			});
+
+		
 		}
 	}
 
@@ -472,6 +485,52 @@ export class Game {
 
 
 	createRowOfAsteroid(
+		prop: RowOfTreeProp
+	) {
+		const {
+			position,
+			probability,
+			minScale,
+			maxScale
+		} = prop;
+		if (disableObstacle) {
+			return;
+		}
+		if (this.typeOfObstacole === 'tree') {
+			this.typeOfObstacole = 'ast';
+		} else {
+			this.typeOfObstacole = 'tree';
+		}
+		let laneObj = 0;
+		for (let lane = -1; lane < 2; lane++) {
+			const randomNumber = Math.random();
+			if (randomNumber < probability) {
+				if (this.score < 124000 && laneObj > 0) {
+					continue;
+				}
+				const scale = minScale + (maxScale - minScale) * Math.random();
+				// const tree = new Asteroid(lane * 800, -400, position, scale);
+				//const asteroidY = 200; 
+				laneObj++;
+				let obj;
+				obj = new Asteroid(lane * 800, 0, position, scale);
+
+				if (this.typeOfObstacole === 'tree') {
+					obj = new Asteroid(lane * 800, 0, position, scale);
+
+				} else {
+					obj = new Tree(lane * 800, -400, position, scale);
+
+				}
+
+				this.objects.push(obj);
+				this.scene.add(obj.mesh);
+				this.obstacolePosition[position] = true;
+			}
+		}
+	}
+
+	createRowOfAsteroidOld(
 		prop: RowOfTreeProp
 	) {
 		const {

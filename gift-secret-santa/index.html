@@ -18,44 +18,23 @@
   <div class="container">
     <!-- Header -->
     <header class="header">
-      <div class="messages">
-        <p>Benvenuto nel gioco!</p>
-      </div>
       <div class="stat">
-        <label>Score: <span id="score">0</span></label>
+        <!-- <label>Score: <span id="score">0</span></label> -->
 
-        <div id="msg">Press any button to begin</div>
+        <div >Secret Santa 2024: Crazy Hackathon Memories </div>
       </div>
     </header>
 
     <!-- Main Game Area -->
     <main class="game-area">
-
+      <div id="info-point" class="messaggi hidden">
+        <label>Score: <span id="score">0</span></label>
+        <div id="msg">Welcome!</div>
+      </div>
       <div id="arcade-area" class="game-screen world">
-        <h1>scegli il gioco</h1>
+        <h3 class="title">scegli il gioco</h3>
         <div id="home-controls" class="home-controls">
-          <button id="gameOneBtn" class="game-select-button">
-            <svg width="80" height="80" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-              <!-- Tronco -->
-              <rect x="90" y="150" width="20" height="30" fill="#8B4513" />
-
-              <!-- Livelli dell'albero -->
-              <polygon points="100,40 60,100 140,100" fill="#228B22" />
-              <polygon points="100,70 70,130 130,130" fill="#2E8B57" />
-              <polygon points="100,100 80,150 120,150" fill="#32CD32" />
-
-              <!-- Palline decorative -->
-              <circle cx="85" cy="85" r="5" fill="#FF0000" />
-              <circle cx="115" cy="90" r="5" fill="#FFD700" />
-              <circle cx="100" cy="110" r="5" fill="#00BFFF" />
-              <circle cx="90" cy="130" r="5" fill="#FFA500" />
-              <circle cx="110" cy="130" r="5" fill="#FF69B4" />
-
-              <!-- Stella in cima -->
-              <polygon points="100,30 105,45 120,45 108,55 113,70 100,60 87,70 92,55 80,45 95,45" fill="#FFD700" />
-            </svg>
-            <span>Christmas Run</span>
-          </button>
+         
           <button id="gameSpaceRunBtn" class="game-select-button">
             <svg width="80" height="80" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
               <!-- Corridore Futuristico -->

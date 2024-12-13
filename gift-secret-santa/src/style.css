@@ -33,7 +33,12 @@ html {
   box-sizing: border-box;
   height: 100%;
 }
-
+.title {
+  margin-top: 1rem;
+  margin-bottom: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+}
 .container {
   display: flex;
   flex-direction: column;
@@ -46,6 +51,7 @@ html {
   color: #fff;
   text-align: center;
   padding: 10px;
+  margin-top: 1rem;
 }
 
 .header .app-name {
@@ -82,7 +88,7 @@ html {
   flex-direction: column;
   align-items: center;
   gap: 1rem;
-  justify-content: center;
+  justify-content: start;
   background-color: transparent;
   border: 3px dashed #999;
   /* visibility: hidden; /* Initially hidden */
@@ -94,6 +100,12 @@ html {
   display: grid;
   gap: 0.4rem
 
+}
+
+.messaggi {
+  position: absolute;
+  z-index: 12;
+  top: 1rem;
 }
 
 .hidden {
@@ -108,6 +120,7 @@ html {
 .footer {
   background-color: #222;
   padding: 10px;
+  margin-bottom: 2.5rem
 }
 
 .controls {

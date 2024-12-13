@@ -46,9 +46,9 @@ export class Character {
     jumpStartTime: number = 0;
 
     constructor() {
-        this.skinColor = Colors.brown;
+        this.skinColor = Math.random() > 0.4 ? Colors.brown : Colors.white;
         this.hairColor = Colors.black;
-        this.shirtColor = Colors.yellow;
+        this.shirtColor = Math.random() > 0.4 ? Colors.blue : Colors.yellow;
         this.shortsColor = Colors.olive;
         this.jumpDuration = 0.6;
         this.jumpHeight = 2000;
