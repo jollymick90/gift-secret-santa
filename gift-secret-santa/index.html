@@ -9,23 +9,16 @@
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands"></script>
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-core"></script>
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-webgl"></script>
-  <!-- <script type="text/javascript" src="/assets/js/three.min.js"></script> -->
-  <!-- <script type="text/javascript" src="/assets/js/Box2dWeb.min.js"></script> -->
-  <!-- <script type="text/javascript" src="/assets/js/keyboard.js"></script> -->
 </head>
 
 <body>
   <div class="container">
-    <!-- Header -->
     <header class="header">
       <div class="stat">
-        <!-- <label>Score: <span id="score">0</span></label> -->
-
         <div >Secret Santa 2024: Crazy Hackathon Memories </div>
       </div>
     </header>
 
-    <!-- Main Game Area -->
     <main class="game-area">
       <div id="info-point" class="messaggi hidden">
         <label>Score: <span id="score">0</span></label>
@@ -72,21 +65,11 @@
               <circle cx="100" cy="100" r="60" fill="#F4A460" /> <!-- Ciambella esterna -->
               <circle cx="100" cy="100" r="30" fill="#FFFFFF" /> <!-- Buco interno -->
 
-              <!-- Glassa -->
-              <path
-                d="M40 100 C50 80, 80 70, 120 90 C140 110, 160 100, 160 100 C150 120, 120 130, 80 110 C60 90, 50 110, 40 100"
-                fill="#FF69B4" />
-
               <!-- Stelle -->
               <polygon points="50,50 55,65 70,65 58,75 63,90 50,80 37,90 42,75 30,65 45,65" fill="#FFD700" />
               <polygon points="150,50 155,65 170,65 158,75 163,90 150,80 137,90 142,75 130,65 145,65" fill="#FFD700" />
               <polygon points="100,140 105,155 120,155 108,165 113,180 100,170 87,180 92,165 80,155 95,155"
                 fill="#FFD700" />
-
-              <!-- Decorazioni zuccherate -->
-              <circle cx="80" cy="80" r="5" fill="#00BFFF" />
-              <circle cx="120" cy="100" r="5" fill="#8A2BE2" />
-              <circle cx="100" cy="120" r="5" fill="#32CD32" />
             </svg>
             <span></span>Doughnut Stars</span>
           </button>
@@ -126,15 +109,18 @@
 
         <div id="game-controls" class="keyboard-layout">
           <div class="row">
-            <button id="btnUp" class="control-button">⬆️</button>
-          </div>
-          <div class="row">
             <button id="btnLeft" class="control-button">⬅️</button>
-            <button id="btnStop" class="control-button">⏺️</button>
+            <button id="btnUp" class="control-button">⬆️</button>
             <button id="btnRight" class="control-button">➡️</button>
           </div>
           <div class="row">
+            <button id="btnD" class="control-button">D</button>
             <button id="btnDown" class="control-button">⬇️</button>
+            <button id="btnPause" class="control-button">P</button>
+
+          </div>
+          <div class="row">
+            <button id="btnStop" class="control-button">⏺️</button>
           </div>
         </div>
       </div>

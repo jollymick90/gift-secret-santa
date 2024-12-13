@@ -87,7 +87,7 @@ export class Game {
 	grounds: GroundSegment[] = [];
 	paused: boolean = false;
 	keysAllowed: { [key: string]: boolean } = {};
-	score: any;
+	score: number = 0;
 	difficulty: any;
 	treePresenceProb: any;
 	maxTreeSize: any;
@@ -263,6 +263,10 @@ export class Game {
 	}
 
 	init() {
+
+		this._output({
+			msg:[stringThanks]
+		})
 		this.loop();
 	}
 
@@ -280,31 +284,32 @@ export class Game {
 	  */
 	loop() {
 		this.timer++;
-		if (this.timer > 50 && this.timer < 100) {
-			this._output({
-				msg:[stringThanks]
-			})
+		if (this.timer % 2 == 0) {
+			this.renderer.render(this.scene, this.camera);
+			requestAnimationFrame(this.loop.bind(this));
+			return;
 		}
+
 		// Update the game.
 		if (!this.paused) {
 			// Add more trees and increase the difficulty.
-			const meshPositionCondition = this.objects.length > 0 && ((this.objects[this.objects.length - 1].mesh.position.z) % GroundSegmentSize === 0);
-			if (meshPositionCondition) {
-				this.difficulty += 1;
+			// const meshPositionCondition = this.objects.length > 0 && ((this.objects[this.objects.length - 1].mesh.position.z) % GroundSegmentSize === 0);
+			// if (meshPositionCondition) {
+			// 	this.difficulty += 1;
 
-				this.calculateFogDistance();
-				// Alterna il tipo di ostacolo
+			// 	this.calculateFogDistance();
+			// 	// Alterna il tipo di ostacolo
 				
-				let newPos = -120000;
-				this.createRowOfAsteroid({
-					position: newPos,
-					probability: this.treePresenceProb,
-					minScale: 0.5,
-					maxScale: this.maxTreeSize
-				});
+			// 	let newPos = -120000;
+			// 	this.createRowOfObjects({
+			// 		position: newPos,
+			// 		probability: this.treePresenceProb,
+			// 		minScale: 0.5,
+			// 		maxScale: this.maxTreeSize
+			// 	});
 
-				this.scene.fog.far = this.fogDistance;
-			}
+			// 	this.scene.fog.far = this.fogDistance;
+			// }
 
 			// Move the obstacole closer to the character.
 			this.objects.forEach(function (object) {
@@ -316,6 +321,14 @@ export class Game {
 				return object.mesh.position.z < 0;
 			});
 
+			if (this.objects.length < 20) {
+				
+				console.log("new obj")
+				const last = this.objects[this.objects.length - 1];
+				const z: number = last.mesh.position.z;
+				this.createInitialCollisionObject(z);
+			}
+
 			this.grounds.forEach(function (object) {
 				object.mesh.position.z += 100;
 			});
@@ -325,14 +338,12 @@ export class Game {
 				return object.mesh.position.z < 0;
 			});
 
-			// console.log("this grounds", this.grounds.length)
 			if (this.grounds.length < 20) {
 				let last = this.grounds[this.grounds.length - 1];
 				const z: number = last.mesh.position.z;
 
 				this.updateStreets(z)
 			}
-
 			// Make the character move according to the controls.
 			this.character.update();
 
@@ -384,17 +395,16 @@ export class Game {
 		}
 
 		// Display the achieved rank.
-		var achievedRankRow = "";
-		achievedRankRow = (rankIndex <= 6)
-			? "".concat(rankIndex * 15 + "", "k-", (rankIndex + 1) * 15 + "", "k").bold()
+		let achievedRankRow = (rankIndex <= 6)
+			? "".concat(rankIndex * 15 + "", "k-", (rankIndex + 1) * 15 + "", "k")
 			: (this.score < 124000)
-				? "105k-124k".bold()
-				: "124k+".bold();
-		var achievedRankRow2 = (rankIndex <= 6)
-			? "Congrats! You're a ".concat(rankNames[rankIndex], "!").bold()
+				? "105k-124k"
+				: "124k+";
+		let achievedRankRow2 = (rankIndex <= 6)
+			? "Congrats! You're a ".concat(rankNames[rankIndex], "!")
 			: (this.score < 124000)
-				? "Congrats! You're a ".concat(rankNames[7], "!").bold()
-				: "Congrats! You exceeded the creator's high score of 123790 and beat the game!".bold();
+				? "Congrats! You're a ".concat(rankNames[7], "!")
+				: "Congrats! You exceeded the creator's high score of 123790 and beat the game!";
 		achievedRankRow = achievedRankRow + " " + achievedRankRow2
 		// Display all ranks lower than the achieved rank.
 		if (this.score >= 120000) {
@@ -460,17 +470,15 @@ export class Game {
 			this.fogDistance -= (5000 / levelLength);
 		}
 	}
-	private createInitialCollisionObject() {
+	private createInitialCollisionObject(z: number = 0) {
 		for (let i = 0; i < 60; i++) {
-			const zPos = i * -3000; // Il primo sarà a 0, poi -3000, -6000, ecc.
-			this.createRowOfAsteroid({
+			const zPos = z - i * 3000; // Il primo sarà a 0, poi -3000, -6000, ecc.
+			this.createRowOfObjects({
 				position: zPos,
 				probability: this.treePresenceProb,
 				minScale: 0.5,
 				maxScale: this.maxTreeSize
 			});
-
-		
 		}
 	}
 
@@ -483,8 +491,7 @@ export class Game {
 		this.camera.updateProjectionMatrix();
 	}
 
-
-	createRowOfAsteroid(
+	createRowOfObjects(
 		prop: RowOfTreeProp
 	) {
 		const {
@@ -505,22 +512,22 @@ export class Game {
 		for (let lane = -1; lane < 2; lane++) {
 			const randomNumber = Math.random();
 			if (randomNumber < probability) {
-				if (this.score < 124000 && laneObj > 0) {
+				if (this.score < 62000 && laneObj > 0) {
+					continue;
+				}
+
+				if (this.score > 62000 && this.score < 124000 && laneObj > 1) {
 					continue;
 				}
 				const scale = minScale + (maxScale - minScale) * Math.random();
-				// const tree = new Asteroid(lane * 800, -400, position, scale);
-				//const asteroidY = 200; 
+		
 				laneObj++;
+		
 				let obj;
-				obj = new Asteroid(lane * 800, 0, position, scale);
-
 				if (this.typeOfObstacole === 'tree') {
 					obj = new Asteroid(lane * 800, 0, position, scale);
-
 				} else {
 					obj = new Tree(lane * 800, -400, position, scale);
-
 				}
 
 				this.objects.push(obj);
@@ -596,55 +603,49 @@ export class Game {
 			const obj = this.grounds[i];
 			if (obj.collides(charMinX, charMaxX, charMinY, charMaxY, charMinZ, charMaxZ)) {
 				isOnGround = true;
-
 				break;
 			}
-
 		}
-		// console.log("isOnGround", isOnGround)
-		// if (!isOnGround) {
-		// 	console.log("is not isOnGround", this.character.element.position.y)
-		// }
+
 		// 3. Se non è a terra, controlliamo se sta saltando abbastanza in alto.
 		// Se il personaggio è sotto un certo Y (diciamo < -200 se non sta saltando alto), allora cade.
 		// Puoi aggiustare la logica in base all'implementazione del salto del tuo Character.
 		if (!isOnGround && this.character.element.position.y <= 400) {
 			// Personaggio è "caduto" nel vuoto
-			console.log("caduto")
 			return true;
+		} else if (!isOnGround && this.character.element.position.y > 400) {
+			this.onCollisionDetected({
+				score: this.score,
+				msg: ["Bravo hai saltato giusto"]
+			});
 		}
 
 		return false;
 	}
 
 	onKeyDown = (e: KeyboardEvent) => {
-		console.log("onKeyDownPressed", e)
 		const key = e.keyCode;
 		this.handleKeyPress(key);
 	}
 
 	public clickLeft() {
-		console.log("clickLeft")
 		this.handleKeyPress(left);
 	}
 	public clickRight() {
-		console.log("clickRight")
-
 		this.handleKeyPress(right);
 	}
 	public clickUp() {
-		console.log("clickUp")
-
 		this.handleKeyPress(up);
 	}
 
+	public clickPause() {
+		this.handleKeyPress(p);
+	}
+
 	private handleKeyPress(key: number) {
-		console.log("key", key)
 		if (this.gameOver) {
 			return;
 		}
-		// if (this.keysAllowed[key] === false) return;
-		// this.keysAllowed[key] = false;
 		if (this.paused && !this.collisionsDetected() && key > 18) {
 			this.paused = false;
 			this.character.onUnpause();

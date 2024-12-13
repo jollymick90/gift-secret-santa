@@ -66,12 +66,13 @@ export function runArcadeControl() {
         const btnLeft = document.getElementById('btnLeft');
         const rightLeft = document.getElementById('btnRight');
         const btnUp = document.getElementById('btnUp');
+        const btnPause = document.getElementById('btnPause');
 
         if (worldSpacerun) {
             game = new Game({
                 _element: worldSpacerun,
                 output: (props) => {
-                    console.log("prop", props);
+                    // console.log("prop", props);
                     if (scoreHtml && props.score) {
                         scoreHtml.innerHTML = `${props.score}`;
                     }
@@ -101,7 +102,7 @@ export function runArcadeControl() {
             btnLeft?.addEventListener('click', game.clickLeft.bind(game));
             rightLeft?.addEventListener('click', game.clickRight.bind(game));
             btnUp?.addEventListener('click', game.clickUp.bind(game));
-
+            btnPause?.addEventListener('click', game.clickPause.bind(game))
             btnStop.addEventListener('click', () => {
                 location.reload()
             });
