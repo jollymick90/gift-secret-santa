@@ -209,7 +209,7 @@ export function runArcadeControl() {
             btnUp?.addEventListener('click', doughnutGame.clickUp.bind(doughnutGame));
             btnDown?.addEventListener('click', doughnutGame.clickDown.bind(doughnutGame));
 
-            doughnutGame.animate();
+            doughnutGame.start();
             btnStop.addEventListener('click', () => {
                 location.reload()
             });

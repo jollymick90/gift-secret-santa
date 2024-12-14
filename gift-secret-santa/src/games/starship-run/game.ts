@@ -323,7 +323,6 @@ export class Game {
 
 			if (this.objects.length < 20) {
 				
-				console.log("new obj")
 				const last = this.objects[this.objects.length - 1];
 				const z: number = last.mesh.position.z;
 				this.createInitialCollisionObject(z);

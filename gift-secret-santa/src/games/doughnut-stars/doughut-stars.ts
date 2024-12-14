@@ -1,4 +1,3 @@
-// game.js
 
 import * as THREE from 'three';
 
@@ -11,7 +10,7 @@ type DoughnutStarsProps = {
     _element: HTMLElement,
     output: (prop: DoughnutStarsOutProps) => void
 }
-    
+
 export function DoughnutStars({
     _element,
     output
@@ -84,54 +83,58 @@ export function DoughnutStars({
     })
 
     // Configura la webcam
-    // const videoElement = document.createElement('video');
-    // videoElement.style.display = "none";
-    // document.body.appendChild(videoElement);
-    // Configura la webcam
+    const videoElement: any = document.getElementById('videoElement');
+    // videoElement.classList.add('hidden');
+    // videoElement.classList.add('camera');
+    const videoArea = document.getElementById('video-area');
+    if (videoElement) {
+        videoElement.width = videoArea.clientWidth;
+        videoElement.height = videoArea.clientHeight;
+    }
 
-    // const videoElement: any = document.getElementById('videoElement');
-    // const canvasOverlay: any = document.getElementById('canvasOverlay');
-    // const ctx = canvasOverlay?.getContext('2d');
+    videoArea.appendChild(videoElement);
+
+    const canvasOverlay: any = document.getElementById('canvasOverlay');
+    const ctx = canvasOverlay?.getContext('2d');
 
     // Funzione per calcolare il riquadro di delimitazione della mano
-    // function getBoundingBox(landmarks) {
-    //     let xMin = Infinity, xMax = -Infinity, yMin = Infinity, yMax = -Infinity;
+    function getBoundingBox(landmarks) {
+        let xMin = Infinity, xMax = -Infinity, yMin = Infinity, yMax = -Infinity;
 
-    //     for (const landmark of landmarks) {
-    //         const x = landmark.x * canvasOverlay.width;
-    //         const y = landmark.y * canvasOverlay.height;
+        for (const landmark of landmarks) {
+            const x = landmark.x * canvasOverlay.width;
+            const y = landmark.y * canvasOverlay.height;
 
-    //         if (x < xMin) xMin = x;
-    //         if (x > xMax) xMax = x;
-    //         if (y < yMin) yMin = y;
-    //         if (y > yMax) yMax = y;
-    //     }
+            if (x < xMin) xMin = x;
+            if (x > xMax) xMax = x;
+            if (y < yMin) yMin = y;
+            if (y > yMax) yMax = y;
+        }
 
-    //     return {
-    //         x: xMin,
-    //         y: yMin,
-    //         width: xMax - xMin,
-    //         height: yMax - yMin,
-    //     };
-    // }
+        return {
+            x: xMin,
+            y: yMin,
+            width: xMax - xMin,
+            height: yMax - yMin,
+        };
+    }
 
-
-    // Funzione per avviare la webcam
-    // async function startCamera() {
-    //     const stream = await navigator.mediaDevices.getUserMedia({
-    //         video: true
-    //     });
-    //     videoElement.srcObject = stream;
-    //     await videoElement.play();
-    // }
-
+    async function startCamera() {
+        const stream = await navigator.mediaDevices.getUserMedia({
+            video: true
+        });
+        videoElement.srcObject = stream;
+        await videoElement.play();
+    }
 
     // Setup MediaPipe Hands
     const hands = new Hands({
         locateFile: (file) => {
+            console.log("file", file)
             return `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`;
         }
     });
+    console.log(hands)
 
     hands.setOptions({
         maxNumHands: 1,
@@ -141,17 +144,6 @@ export function DoughnutStars({
     });
 
     hands.onResults(onResults);
-
-    // const model = handPoseDetection.SupportedModels.MediaPipeHands;
-    // const detectorConfig = {
-    //   runtime: 'mediapipe', // or 'tfjs'
-    //   modelType: 'full'
-    // };
-
-
-    // const detector = await handPoseDetection.createDetector(model, detectorConfig);
-    // const video = document.getElementById('video');
-    // const hands2 = await detector.estimateHands(video);
 
     // Funzione per gestire i risultati del rilevamento delle mani
     function onResults(results) {
@@ -264,7 +256,22 @@ export function DoughnutStars({
             player.position.y -= 1; // Move Down
         }
     }
+    startCamera()
+        .then(() => {
+            videoElement.classList.remove('hidden');
+        })
+        .catch((err => {
+            console.error("error sgtart camera");
+        }));
+    const sendVideo = async () => {
+        await hands.send({ image: videoElement });
+        requestAnimationFrame(sendVideo);
+    };
+    sendVideo();
+    function start() {
 
+        animate();
+    }
     function animate() {
 
         requestAnimationFrame(animate);
@@ -308,13 +315,11 @@ export function DoughnutStars({
 
 
     return {
-        animate,
+        start,
         clickLeft,
         clickRight,
         clickUp,
         clickDown
     }
 }
-
-
 

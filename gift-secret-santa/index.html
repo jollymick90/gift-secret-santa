@@ -5,7 +5,7 @@
   <meta charset="UTF-8" />
   <link rel="icon" type="image/svg+xml" href="/vite.svg" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Vite + TS</title>
+  <title>Secret santa 2024: Crazy Hackathon Memories</title>
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands"></script>
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-core"></script>
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-webgl"></script>
@@ -122,6 +122,10 @@
           <div class="row">
             <button id="btnStop" class="control-button">⏺️</button>
           </div>
+        </div>
+        <div id="video-area" class="area-video">
+          <video id="videoElement" class="camera"></video>
+          <canvas id="canvasOverlay" class="canvas-identity"></canvas>
         </div>
       </div>
     </footer>
