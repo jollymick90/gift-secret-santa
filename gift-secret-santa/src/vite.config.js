@@ -10,6 +10,9 @@ export default defineConfig({
         entryFileNames: `[name].js`,
       },
     },
-    assetsInclude: ['/assets/**/*.js'],
+    assetsInclude: [
+      '/assets/**/*.js',
+      '/assets/models/*'
+    ],
   },
 });

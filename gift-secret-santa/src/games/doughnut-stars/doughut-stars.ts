@@ -1,7 +1,8 @@
 
+import { Hands } from '@mediapipe/hands';
 import * as THREE from 'three';
 
-declare var Hands: any;
+// declare var Hands: any;
 type DoughnutStarsOutProps = {
     score?: number,
     msg?: string[]
@@ -92,7 +93,7 @@ export function DoughnutStars({
         videoElement.height = videoArea.clientHeight;
     }
 
-    videoArea.appendChild(videoElement);
+    // videoArea.appendChild(videoElement);
 
     const canvasOverlay: any = document.getElementById('canvasOverlay');
     const ctx = canvasOverlay?.getContext('2d');
@@ -256,20 +257,21 @@ export function DoughnutStars({
             player.position.y -= 1; // Move Down
         }
     }
-    startCamera()
+
+   
+    function start() {
+        startCamera()
         .then(() => {
             videoElement.classList.remove('hidden');
+            const sendVideo = async () => {
+                await hands.send({ image: videoElement });
+                requestAnimationFrame(sendVideo);
+            };
+            sendVideo();
         })
         .catch((err => {
             console.error("error sgtart camera");
         }));
-    const sendVideo = async () => {
-        await hands.send({ image: videoElement });
-        requestAnimationFrame(sendVideo);
-    };
-    sendVideo();
-    function start() {
-
         animate();
     }
     function animate() {

@@ -6,7 +6,7 @@ import { Colors } from './constant';
 import { GameObject } from './game.model';
 import { Tree } from './tree';
 import { createBox } from './ui-utils';
-
+import { StarFaceDetection } from './face-detection';
 // Start receiving feedback from the player.
 
 const stringThanks = "We thank Wan Fung Chui for the inspiration."
@@ -76,7 +76,11 @@ class GroundSegment implements GameObject {
 export class Game {
 
 	isFallIntoGap: boolean = false;
+	faceDetection: StarFaceDetection;
 	element: any;
+	videoElement: HTMLVideoElement;
+	// canvasElement: any;
+	// canvasCtx: any;
 	scene: any;
 	camera: any;
 	character: any;
@@ -97,7 +101,7 @@ export class Game {
 	obstacolePosition: { [zPos: number]: boolean } = {};
 
 	typeOfObstacole: 'ast' | 'tree' = 'ast';
-	
+
 	_output: (prop: StarshipRunOutProps) => void
 
 	timer: number = 0;
@@ -110,12 +114,17 @@ export class Game {
 	constructor(prop: StarshipRunProps) {
 		this.element = prop._element;
 		this._output = prop.output;
+		this.faceDetection = new StarFaceDetection()
 
+		this.faceDetection.load();
+
+		// this.canvasElement = document.getElementById('canvasOverlay');
+		// this.canvasCtx = this.canvasElement.getContext('2d');
 		this.renderer = new THREE.WebGLRenderer({
 			alpha: true,
 			antialias: true
 		});
-
+		
 		this.renderer.setSize(
 			this.element.clientWidth,
 			this.element.clientHeight
@@ -179,7 +188,8 @@ export class Game {
 			this.onFocus
 		);
 	}
-	
+
+
 
 	updateStreets(z: number) {
 		// Numero di segmenti di strada pieni dopo un buco
@@ -265,7 +275,7 @@ export class Game {
 	init() {
 
 		this._output({
-			msg:[stringThanks]
+			msg: [stringThanks]
 		})
 		this.loop();
 	}
@@ -299,7 +309,7 @@ export class Game {
 
 			// 	this.calculateFogDistance();
 			// 	// Alterna il tipo di ostacolo
-				
+
 			// 	let newPos = -120000;
 			// 	this.createRowOfObjects({
 			// 		position: newPos,
@@ -322,7 +332,7 @@ export class Game {
 			});
 
 			if (this.objects.length < 20) {
-				
+
 				const last = this.objects[this.objects.length - 1];
 				const z: number = last.mesh.position.z;
 				this.createInitialCollisionObject(z);
@@ -361,11 +371,11 @@ export class Game {
 				this.gameOver = true;
 				this.paused = true;
 				this.printInfo();
-			} 
+			}
 			if (!this.isFallIntoGap && this.timer % 150 === 0) {
 				this.printInfo(false)
 			}
-			
+
 
 			// Update the scores.
 			this.score += 10;
@@ -519,9 +529,9 @@ export class Game {
 					continue;
 				}
 				const scale = minScale + (maxScale - minScale) * Math.random();
-		
+
 				laneObj++;
-		
+
 				let obj;
 				if (this.typeOfObstacole === 'tree') {
 					obj = new Asteroid(lane * 800, 0, position, scale);
