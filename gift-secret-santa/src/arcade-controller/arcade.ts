@@ -6,6 +6,7 @@ import { Game } from '../games/starship-run/game';
 
 let game: Game | null = null;
 export function runArcadeControl() {
+ 
     const arcadeArea = document.getElementById('arcade-area');
     const gameOneBtn = document?.getElementById('gameOneBtn');
     const gameSpaceRunBtn = document?.getElementById('gameSpaceRunBtn');
@@ -67,6 +68,8 @@ export function runArcadeControl() {
         const rightLeft = document.getElementById('btnRight');
         const btnUp = document.getElementById('btnUp');
         const btnPause = document.getElementById('btnPause');
+        const btnF = document.getElementById('btnF');
+        const btnD = document.getElementById('btnD');
 
         if (worldSpacerun) {
             game = new Game({
@@ -102,7 +105,9 @@ export function runArcadeControl() {
             btnLeft?.addEventListener('click', game.clickLeft.bind(game));
             rightLeft?.addEventListener('click', game.clickRight.bind(game));
             btnUp?.addEventListener('click', game.clickUp.bind(game));
-            btnPause?.addEventListener('click', game.clickPause.bind(game))
+            btnPause?.addEventListener('click', game.clickPause.bind(game));
+            btnF?.addEventListener('click', game.clickF.bind(game))
+            btnD?.addEventListener('click', game.clickD.bind(game))
             btnStop.addEventListener('click', () => {
                 location.reload()
             });

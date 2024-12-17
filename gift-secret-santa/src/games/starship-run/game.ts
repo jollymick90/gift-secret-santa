@@ -10,10 +10,13 @@ import { StarFaceDetection } from './face-detection';
 // Start receiving feedback from the player.
 
 const stringThanks = "We thank Wan Fung Chui for the inspiration."
-const left = 37;
-const up = 38;
-const right = 39;
-const p = 80;
+const ArrowLeft = 37;
+const ArrowUp = 38;
+const ArrowRight = 39;
+const ArrowDown = 40;
+const KeyP = 80;
+const KeyF = 70;
+const KeyD = 68;
 const disableObstacle = false;
 
 type RowOfTreeProp = {
@@ -101,6 +104,8 @@ export class Game {
 	obstacolePosition: { [zPos: number]: boolean } = {};
 
 	typeOfObstacole: 'ast' | 'tree' = 'ast';
+
+	showFace: boolean = false;
 
 	_output: (prop: StarshipRunOutProps) => void
 
@@ -302,24 +307,6 @@ export class Game {
 
 		// Update the game.
 		if (!this.paused) {
-			// Add more trees and increase the difficulty.
-			// const meshPositionCondition = this.objects.length > 0 && ((this.objects[this.objects.length - 1].mesh.position.z) % GroundSegmentSize === 0);
-			// if (meshPositionCondition) {
-			// 	this.difficulty += 1;
-
-			// 	this.calculateFogDistance();
-			// 	// Alterna il tipo di ostacolo
-
-			// 	let newPos = -120000;
-			// 	this.createRowOfObjects({
-			// 		position: newPos,
-			// 		probability: this.treePresenceProb,
-			// 		minScale: 0.5,
-			// 		maxScale: this.maxTreeSize
-			// 	});
-
-			// 	this.scene.fog.far = this.fogDistance;
-			// }
 
 			// Move the obstacole closer to the character.
 			this.objects.forEach(function (object) {
@@ -375,7 +362,6 @@ export class Game {
 			if (!this.isFallIntoGap && this.timer % 150 === 0) {
 				this.printInfo(false)
 			}
-
 
 			// Update the scores.
 			this.score += 10;
@@ -638,17 +624,23 @@ export class Game {
 	}
 
 	public clickLeft() {
-		this.handleKeyPress(left);
+		this.handleKeyPress(ArrowLeft);
 	}
 	public clickRight() {
-		this.handleKeyPress(right);
+		this.handleKeyPress(ArrowRight);
 	}
 	public clickUp() {
-		this.handleKeyPress(up);
+		this.handleKeyPress(ArrowUp);
+	}
+	public clickPause() {
+		this.handleKeyPress(KeyP);
+	}
+	public clickF() {
+		this.handleKeyPress(KeyF);
 	}
 
-	public clickPause() {
-		this.handleKeyPress(p);
+	public clickD() {
+		this.handleKeyPress(KeyD);
 	}
 
 	private handleKeyPress(key: number) {
@@ -661,23 +653,27 @@ export class Game {
 			this.onResume();
 			return;
 		}
-		if (key === p) {
+		if (key === KeyP) {
 			this.paused = true;
 			this.character.onPause();
 			this.onPause();
 			return;
 		}
-		if (key === up && !this.paused) {
+		if (key === ArrowUp && !this.paused) {
 			this.character.onUpKeyPressed();
 			return;
 		}
-		if (key === left && !this.paused) {
+		if (key === ArrowLeft && !this.paused) {
 			this.character.onLeftKeyPressed();
 			return;
 		}
-		if (key === right && !this.paused) {
+		if (key === ArrowRight && !this.paused) {
 			this.character.onRightKeyPressed();
 			return;
+		}
+		if (key === KeyF) {
+			this.showFace = !this.showFace;
+			this.faceDetection.updateShowFace(this.showFace);
 		}
 	}
 
