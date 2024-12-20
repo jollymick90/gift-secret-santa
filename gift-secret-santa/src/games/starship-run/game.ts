@@ -2,22 +2,11 @@ import * as THREE from 'three';
 
 import { Asteroid } from './asteroid';
 import { Character } from './character';
-import { Colors } from './constant';
+import { ArrowLeft, ArrowRight, ArrowUp, gapProbability, GroundSegmentSize, KeyD, KeyF, KeyP, OKClicked, pieceStreet, spaceJump, stringThanks } from './constant';
 import { GameObject } from './game.model';
 import { Tree } from './tree';
-import { createBox } from './ui-utils';
 import { StarFaceDetection } from './face-detection';
-// Start receiving feedback from the player.
-
-const stringThanks = "We thank Wan Fung Chui for the inspiration."
-const ArrowLeft = 37;
-const ArrowUp = 38;
-const ArrowRight = 39;
-const ArrowDown = 40;
-const KeyP = 80;
-const KeyF = 70;
-const KeyD = 68;
-const disableObstacle = false;
+import { GroundSegment } from './groundsegment';
 
 type RowOfTreeProp = {
 	position: number;
@@ -35,101 +24,69 @@ type StarshipRunProps = {
 	_element: HTMLElement,
 	output: (prop: StarshipRunOutProps) => void
 }
-const GroundSegmentSize = 1500;
-const pieceStreet = 60;
-const spaceJump = 20;
-const gapProbability = 0.15;
 
+type TypeOfObstacole = 'ast' | 'tree';
 
-class GroundSegment implements GameObject {
-	constructor(x: number, y: number, z: number) {
-
-		this.mesh = createBox(3000, 20, GroundSegmentSize, Colors.cherry, x, y, z);
-	}
-	mesh: any;
-	x: number;
-	y: number;
-	z: number;
-	s: number;
-
-	collides(charMinX: number, charMaxX: number, charMinY: number,
-		charMaxY: number, charMinZ: number, charMaxZ: number) {
-		// Il terreno non causa collisione distruttiva, 
-		// ma ci serve sapere se il personaggio è "appoggiato" su di esso.
-		// Possiamo semplicemente verificare se il personaggio si trova nel range Z del terreno 
-		// e X all'interno del terreno.
-
-		// Calcoliamo i bounding box del terreno
-		let segMinX = this.mesh.position.x - (GroundSegmentSize / 2);
-		let segMaxX = this.mesh.position.x + (GroundSegmentSize / 2);
-		let segMinZ = this.mesh.position.z - (GroundSegmentSize / 2);
-		let segMaxZ = this.mesh.position.z + (GroundSegmentSize / 2);
-
-		// Se l'omino è all'interno del riquadro del terreno in X e Z,
-		// lo consideriamo "supportato".
-		if (charMaxX > segMinX && charMinX < segMaxX &&
-			charMaxZ > segMinZ && charMinZ < segMaxZ) {
-			// Qui potremmo mettere un flag che indica che sotto l'omino c'è terreno.
-			return true;
-		}
-
-		return false;
-	}
-}
 export class Game {
 
-	isFallIntoGap: boolean = false;
-	faceDetection: StarFaceDetection;
-	element: any;
-	videoElement: HTMLVideoElement;
-	// canvasElement: any;
-	// canvasCtx: any;
-	scene: any;
-	camera: any;
-	character: any;
-	renderer: any;
-	light: any;
-	stars: any;
-	objects: GameObject[] = [];
-	grounds: GroundSegment[] = [];
-	paused: boolean = false;
-	keysAllowed: { [key: string]: boolean } = {};
-	score: number = 0;
-	difficulty: any;
-	treePresenceProb: any;
-	maxTreeSize: any;
-	gameOver: any;
-	fogDistance: number;
-	holePositions: { [zPos: number]: boolean } = {};
-	obstacolePosition: { [zPos: number]: boolean } = {};
 
-	typeOfObstacole: 'ast' | 'tree' = 'ast';
+	private element: HTMLElement;
+	private obstacleBtn: HTMLElement;
+	private supermanmodeBtn: HTMLElement;
+	private ghostBtn: HTMLElement;
+	private scene: any;
+	private camera: any;
+	private character: any;
+	private renderer: any;
+	private light: any;
+	private stars: any;
 
-	showFace: boolean = false;
+	private treePresenceProb: number = 0.2;
+	private maxTreeSize: number = 0.5;
+	private fogDistance: number = 40000;
+	private timer: number = 0;
+	private score: number = 0;
+	private difficulty: number = 0;
 
-	_output: (prop: StarshipRunOutProps) => void
+	private paused = true;
+	private isFallIntoGap = false;
+	private isCollisionDetected = false;
+	private gameOver = false;
+	private showFace = false;
+	private faceControllerEnabled = false;
+	private supermanMode = true;
+	private enableCollisionObject = false;
+	private ghostMode = true;
 
-	timer: number = 0;
+	private starFaceDetection: StarFaceDetection = new StarFaceDetection();
+
+	private keysAllowed: { [key: string]: boolean } = {};
+	private holePositions: { [zPos: number]: boolean } = {};
+	private obstacolePosition: { [zPos: number]: boolean } = {};
+	private objects: GameObject[] = [];
+	private grounds: GroundSegment[] = [];
+
+	private typeOfObstacole: TypeOfObstacole = 'ast';
+
+	private _output: (prop: StarshipRunOutProps) => void
 
 	private onPause: () => void = () => { console.warn("noPauseDefined"); };
 	private onResume: () => void = () => { console.warn("noResumeDefined"); };
 	private onCollisionDetected: (prop: StarshipRunOutProps) => void = (prop: StarshipRunOutProps) => { console.warn("onCollisionDetected") }
 	private onScoreChanged: (score: number) => void = (score: number) => { console.warn("onCollisionDetected") }
+	private onFaceDetectionMode: (active: boolean) => void;
 
 	constructor(prop: StarshipRunProps) {
 		this.element = prop._element;
 		this._output = prop.output;
-		this.faceDetection = new StarFaceDetection()
 
-		this.faceDetection.load();
+		this.starFaceDetection.load();
 
-		// this.canvasElement = document.getElementById('canvasOverlay');
-		// this.canvasCtx = this.canvasElement.getContext('2d');
 		this.renderer = new THREE.WebGLRenderer({
 			alpha: true,
 			antialias: true
 		});
-		
+
 		this.renderer.setSize(
 			this.element.clientWidth,
 			this.element.clientHeight
@@ -138,8 +95,6 @@ export class Game {
 		this.element.appendChild(this.renderer.domElement);
 		this.scene = new THREE.Scene();
 
-
-		this.fogDistance = 40000;
 		this.scene.fog = new THREE.Fog(0xFFFFFF, 1, this.fogDistance);
 		// Initialize the camera with field of view, aspect ratio,
 		// near plane, and far plane.
@@ -151,7 +106,6 @@ export class Game {
 		);
 		this.camera.position.set(0, 1500, -2000);
 		this.camera.lookAt(new THREE.Vector3(0, 600, -5000));
-		// (window as any).camera = this.camera;
 
 		// // Set up resizing capabilities.
 		window.addEventListener('resize', this.handleWindowResize.bind(this), false);
@@ -165,21 +119,158 @@ export class Game {
 		this.updateStreets(0);
 		this.addStarsBackground(this.scene);
 
-		this.objects = [];
-		this.treePresenceProb = 0.2;
-		this.maxTreeSize = 0.5;
-		this.createInitialCollisionObject()
+		// this.createInitialCollisionObject()
+		this.addPrivateEventListener();
+		this.updateStateBtns();
 
-		// The game is paused to begin with and the game is not over.
-		this.gameOver = false;
-		this.paused = true;
+	}
 
-		this.keysAllowed = {};
+	public setFaceDetectionModeActive(arg0: (active: boolean) => void) {
+		this.onFaceDetectionMode = arg0;
+	}
+	public setOnPause(_onPause: () => void) {
+		this.onPause = _onPause;
+	}
 
-		// Initialize the scores and difficulty.
-		this.score = 0;
-		this.difficulty = 0;
+	public setOnResume(_onResume: () => void) {
+		this.onResume = _onResume;
+	}
 
+	public setOnCollisionDetected(_onCollisionDetected: (score: StarshipRunOutProps) => void) {
+		this.onCollisionDetected = _onCollisionDetected;
+	}
+
+	public setOnScoreChanged(_onScoreChanged: (score: number) => void) {
+		this.onScoreChanged = _onScoreChanged;
+	}
+	public clickOK() {
+		this.handleKeyPress(OKClicked);
+	}
+	public clickLeft() {
+		this.handleKeyPress(ArrowLeft);
+	}
+	public clickRight() {
+		this.handleKeyPress(ArrowRight);
+	}
+	public clickUp() {
+		this.handleKeyPress(ArrowUp);
+	}
+	public clickPause() {
+		this.handleKeyPress(KeyP);
+	}
+	public clickF() {
+		this.handleKeyPress(KeyF);
+	}
+
+	public clickD() {
+		this.handleKeyPress(KeyD);
+	}
+
+	public startEngine() {
+
+		this._output({
+			msg: [stringThanks]
+		})
+		this.loop();
+	}
+	/**
+		 * The main animation loop.
+		 */
+	private loop() {
+		this.timer++;
+		if (this.timer % 2 == 0) {
+			this.moveStars();
+			this.renderer.render(this.scene, this.camera);
+			requestAnimationFrame(this.loop.bind(this));
+			return;
+		}
+
+		// Update the game.
+		if (!this.paused) {
+
+			// Move the obstacole closer to the character.
+			this.objects.forEach(function (object) {
+				object.mesh.position.z += 100;
+			});
+
+			// Remove obstacole that are outside of the world.
+			this.objects = this.objects.filter(function (object) {
+				return object.mesh.position.z < 0;
+			});
+
+			if (this.objects.length > 0 && this.objects.length < 20) {
+
+				const last = this.objects[this.objects.length - 1];
+				const z: number = last.mesh.position.z;
+				this.createInitialCollisionObject(z);
+			}
+
+			this.grounds.forEach(function (object) {
+				object.mesh.position.z += 100;
+			});
+
+			// Remove grounds that are outside of the world.
+			this.grounds = this.grounds.filter(function (object) {
+				return object.mesh.position.z < 0;
+			});
+
+			if (this.grounds.length < 20) {
+				let last = this.grounds[this.grounds.length - 1];
+				const z: number = last.mesh.position.z;
+
+				this.updateStreets(z)
+			}
+			// Make the character move according to the controls.
+			this.character.update();
+
+			if (this.checkFallIntoGap()) {
+				this.isFallIntoGap = true;
+
+				if (this.supermanMode) {
+					this.onCollisionDetected({
+						score: this.score,
+						msg: ["Saresti caduto... ma sei superman"]
+					});
+				} else {
+
+					this.gameOver = true;
+					this.paused = true;
+					this.printInfo();
+
+				}
+
+			} else if (this.collisionsDetected()) {
+				this.isCollisionDetected = true;
+
+				if (this.ghostMode) {
+					this.onCollisionDetected({
+						score: this.score,
+						msg: ["Modalità fantasma attiva... passi attraverso"]
+					});
+				} else {
+					this.gameOver = true;
+					this.paused = true;
+					this.printInfo();
+				}
+
+
+			}
+			if ((!this.isCollisionDetected || !this.isFallIntoGap) && this.timer % 150 === 0) {
+				this.printInfo(false)
+			}
+
+
+			// Update the scores.
+			this.score += 10;
+			this.onScoreChanged(this.score);
+		}
+		this.moveStars();
+		// Render the page and repeat.
+		this.renderer.render(this.scene, this.camera);
+		requestAnimationFrame(this.loop.bind(this));
+	}
+
+	private addPrivateEventListener() {
 		document.addEventListener(
 			'keydown',
 			this.onKeyDown
@@ -192,11 +283,79 @@ export class Game {
 			'focus',
 			this.onFocus
 		);
+
+		this.obstacleBtn = document.getElementById('obstacle');
+		this.obstacleBtn?.addEventListener('click', () => {
+			this.enableCollisionObject = !this.enableCollisionObject;
+
+			this.updateObstacleBtnState();
+		});
+		this.supermanmodeBtn = document.getElementById('supermanmode');
+		this.supermanmodeBtn?.addEventListener('click', () => {
+			this.supermanMode = !this.supermanMode;
+
+			this.updateSupermanBtnState();
+		});
+		this.ghostBtn = document.getElementById('ghost');
+		this.ghostBtn?.addEventListener('click', () => {
+			this.ghostMode = !this.ghostMode;
+
+			this.updateGhostBtnState();
+		});
+
+		this.starFaceDetection.onController({
+			right: () => {
+				if (this.faceControllerEnabled)
+					this.clickRight();
+			},
+			left: () => {
+				if (this.faceControllerEnabled)
+					this.clickLeft();
+			},
+			center: () => { },
+			up: () => { },
+			down: () => { }
+		})
 	}
 
+	private updateStateBtns() {
+		this.updateObstacleBtnState();
 
+		this.updateSupermanBtnState();
 
-	updateStreets(z: number) {
+		this.updateGhostBtnState();
+	}
+
+	private updateGhostBtnState() {
+		if (this.ghostMode)
+			this.ghostBtn?.classList.add('active');
+		else
+			this.ghostBtn?.classList.remove('active');
+	}
+
+	private updateSupermanBtnState() {
+		if (this.supermanMode)
+			this.supermanmodeBtn?.classList.add('active');
+		else
+			this.supermanmodeBtn?.classList.remove('active');
+	}
+
+	private updateObstacleBtnState() {
+		if (this.enableCollisionObject)
+			this.obstacleBtn?.classList.add('active');
+		else
+			this.obstacleBtn?.classList.remove('active');
+
+		if (this.enableCollisionObject && this.objects.length === 0) {
+			this.createInitialCollisionObject();
+		}
+
+		if (!this.enableCollisionObject && this.objects.length > 0) {
+			this.removeCollisionObject();
+		}
+	}
+
+	private updateStreets(z: number) {
 		// Numero di segmenti di strada pieni dopo un buco
 		let segmentsSinceLastGap = spaceJump; // Avviamo con un valore >= spaceJump per permettere un buco iniziale
 
@@ -220,7 +379,7 @@ export class Game {
 		}
 	}
 
-	createRowOfGround(position: number, createSegment: boolean) {
+	private createRowOfGround(position: number, createSegment: boolean) {
 		if (!createSegment) {
 			// Niente suolo qui -> dirupo
 			return;
@@ -253,126 +412,25 @@ export class Game {
 		scene.add(this.stars);
 	}
 
-	setOnPause(_onPause: () => void) {
-		this.onPause = _onPause;
-	}
-
-	setOnResume(_onResume: () => void) {
-		this.onResume = _onResume;
-	}
-
-	setOnCollisionDetected(_onCollisionDetected: (score: StarshipRunOutProps) => void) {
-		this.onCollisionDetected = _onCollisionDetected;
-	}
-
-	setOnScoreChanged(_onScoreChanged: (score: number) => void) {
-		this.onScoreChanged = _onScoreChanged;
-	}
-
-	keyUp = (e: KeyboardEvent) => {
+	private keyUp = (e: KeyboardEvent) => {
 		this.keysAllowed[e.keyCode] = true;
 	}
 
-	onFocus = () => {
+	private onFocus = () => {
 		this.keysAllowed = {};
 	}
 
-	init() {
-
-		this._output({
-			msg: [stringThanks]
-		})
-		this.loop();
-	}
-
-	moveStars() {
+	private moveStars() {
 		// Movimento delle stelle verso la camera
-		this.stars.position.z += 0.1;
+		this.stars.position.z += 100;
 
 		// Se le stelle hanno superato un certo punto, riportale indietro
 		if (this.stars.position.z > 50) {
 			this.stars.position.z = -50;
 		}
 	}
-	/**
-	  * The main animation loop.
-	  */
-	loop() {
-		this.timer++;
-		if (this.timer % 2 == 0) {
-			this.renderer.render(this.scene, this.camera);
-			requestAnimationFrame(this.loop.bind(this));
-			return;
-		}
 
-		// Update the game.
-		if (!this.paused) {
-
-			// Move the obstacole closer to the character.
-			this.objects.forEach(function (object) {
-				object.mesh.position.z += 100;
-			});
-
-			// Remove obstacole that are outside of the world.
-			this.objects = this.objects.filter(function (object) {
-				return object.mesh.position.z < 0;
-			});
-
-			if (this.objects.length < 20) {
-
-				const last = this.objects[this.objects.length - 1];
-				const z: number = last.mesh.position.z;
-				this.createInitialCollisionObject(z);
-			}
-
-			this.grounds.forEach(function (object) {
-				object.mesh.position.z += 100;
-			});
-
-			// Remove grounds that are outside of the world.
-			this.grounds = this.grounds.filter(function (object) {
-				return object.mesh.position.z < 0;
-			});
-
-			if (this.grounds.length < 20) {
-				let last = this.grounds[this.grounds.length - 1];
-				const z: number = last.mesh.position.z;
-
-				this.updateStreets(z)
-			}
-			// Make the character move according to the controls.
-			this.character.update();
-
-			// Check for collisions between the character and objects.
-			// Controlliamo collisioni e gap
-
-			if (this.checkFallIntoGap()) {
-				this.isFallIntoGap = true;
-				// this.gameOver = true;
-				// this.paused = true;
-				this.onCollisionDetected({
-					score: this.score,
-					msg: ["Saresti caduto... ma sei superman"]
-				});
-			} else if (this.collisionsDetected()) {
-				this.gameOver = true;
-				this.paused = true;
-				this.printInfo();
-			}
-			if (!this.isFallIntoGap && this.timer % 150 === 0) {
-				this.printInfo(false)
-			}
-
-			// Update the scores.
-			this.score += 10;
-			this.onScoreChanged(this.score);
-		}
-		this.moveStars();
-		// Render the page and repeat.
-		this.renderer.render(this.scene, this.camera);
-		requestAnimationFrame(this.loop.bind(this));
-	}
-	printInfo(endOfGame: boolean = true) {
+	private printInfo(endOfGame: boolean = true) {
 		const textOutput = endOfGame ? "Game over!" : "";
 		let rankNames = ["Typical Engineer", "Couch Potato", "Weekend Jogger", "Daily Runner",
 			"Local Prospect", "Regional Star", "National Champ", "Second Mo Farah"];
@@ -425,7 +483,7 @@ export class Game {
 
 		});
 	}
-	calculateFogDistance() {
+	private calculateFogDistance() {
 		const levelLength = 30;
 		if (this.difficulty % levelLength == 0) {
 			const level = this.difficulty / levelLength;
@@ -477,16 +535,24 @@ export class Game {
 		}
 	}
 
+	private removeCollisionObject() {
+		for (const obj of this.objects) {
+			this.scene.remove(obj.mesh);
+		}
+
+		this.objects = [];
+	}
+
 	/**
 	  * A method called when window is resized.
 	  */
-	handleWindowResize() {
+	private handleWindowResize() {
 		this.renderer.setSize(this.element.clientWidth, this.element.clientHeight);
 		this.camera.aspect = this.element.clientWidth / this.element.clientHeight;
 		this.camera.updateProjectionMatrix();
 	}
 
-	createRowOfObjects(
+	private createRowOfObjects(
 		prop: RowOfTreeProp
 	) {
 		const {
@@ -495,7 +561,7 @@ export class Game {
 			minScale,
 			maxScale
 		} = prop;
-		if (disableObstacle) {
+		if (!this.enableCollisionObject) {
 			return;
 		}
 		if (this.typeOfObstacole === 'tree') {
@@ -532,7 +598,7 @@ export class Game {
 		}
 	}
 
-	createRowOfAsteroidOld(
+	private createRowOfAsteroidOld(
 		prop: RowOfTreeProp
 	) {
 		const {
@@ -541,7 +607,7 @@ export class Game {
 			minScale,
 			maxScale
 		} = prop;
-		if (disableObstacle) {
+		if (!this.enableCollisionObject) {
 			return;
 		}
 
@@ -564,7 +630,7 @@ export class Game {
 	 * Returns true if and only if the character is currently colliding with
 	 * an object on the map.
 	 */
-	collisionsDetected() {
+	private collisionsDetected() {
 		const charMinX = this.character.element.position.x - 115;
 		const charMaxX = this.character.element.position.x + 115;
 		const charMinY = this.character.element.position.y - 310;
@@ -580,7 +646,7 @@ export class Game {
 		return false;
 	}
 
-	checkFallIntoGap() {
+	private checkFallIntoGap() {
 		// Logica:
 		// 1. Calcola bounding box del personaggio
 		const charMinX = this.character.element.position.x - 115;
@@ -618,29 +684,9 @@ export class Game {
 		return false;
 	}
 
-	onKeyDown = (e: KeyboardEvent) => {
+	private onKeyDown = (e: KeyboardEvent) => {
 		const key = e.keyCode;
 		this.handleKeyPress(key);
-	}
-
-	public clickLeft() {
-		this.handleKeyPress(ArrowLeft);
-	}
-	public clickRight() {
-		this.handleKeyPress(ArrowRight);
-	}
-	public clickUp() {
-		this.handleKeyPress(ArrowUp);
-	}
-	public clickPause() {
-		this.handleKeyPress(KeyP);
-	}
-	public clickF() {
-		this.handleKeyPress(KeyF);
-	}
-
-	public clickD() {
-		this.handleKeyPress(KeyD);
 	}
 
 	private handleKeyPress(key: number) {
@@ -672,11 +718,13 @@ export class Game {
 			return;
 		}
 		if (key === KeyF) {
-			this.showFace = !this.showFace;
-			this.faceDetection.updateShowFace(this.showFace);
+
+			// this.showFace = !this.showFace;
+			// this.starFaceDetection.updateShowFace(this.showFace);
+			this.faceControllerEnabled = !this.faceControllerEnabled;
+			this.onFaceDetectionMode(this.faceControllerEnabled);
 		}
 	}
-
 
 	/**
 	 * Creates and returns a row of trees according to the specifications.
@@ -689,7 +737,7 @@ export class Game {
 	   * @param {number} MAXSCALE The maximum size of the trees.
 	   *
 	 */
-	createRowOfTrees(
+	private createRowOfTrees(
 		prop: RowOfTreeProp
 	) {
 		const {
@@ -698,7 +746,7 @@ export class Game {
 			minScale,
 			maxScale
 		} = prop;
-		if (disableObstacle) {
+		if (!this.enableCollisionObject) {
 			return;
 		}
 		for (let lane = -1; lane < 2; lane++) {

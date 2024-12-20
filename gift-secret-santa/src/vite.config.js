@@ -8,7 +8,11 @@ export default defineConfig({
       },
       output: {
         entryFileNames: `[name].js`,
+        
       },
+    },
+    build: {
+      outDir: Config.modulesDirRelativePath + "/secretsanta2024"
     },
     assetsInclude: [
       '/assets/**/*.js',

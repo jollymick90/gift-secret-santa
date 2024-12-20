@@ -13,7 +13,7 @@
   <div class="container">
     <header class="header">
       <div class="stat">
-        <div >Secret Santa 2024: Crazy Hackathon Memories </div>
+        <div>Secret Santa 2024: Crazy Hackathon Memories </div>
       </div>
     </header>
 
@@ -25,7 +25,7 @@
       <div id="arcade-area" class="game-screen world">
         <h3 class="title">scegli il gioco</h3>
         <div id="home-controls" class="home-controls">
-         
+
           <button id="gameSpaceRunBtn" class="game-select-button">
             <svg width="80" height="80" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
               <!-- Corridore Futuristico -->
@@ -75,15 +75,15 @@
             <svg width="80" height="80" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
               <!-- Labirinto principale -->
               <rect x="40" y="40" width="120" height="120" fill="none" stroke="#000000" stroke-width="8" />
-            
+
               <!-- Percorsi interni -->
-              <path d="M60 60 H120 V80 H80 V100 H140 V140 H60 V100 H100 V60 Z" 
-                    fill="none" stroke="#000000" stroke-width="8" />
-            
+              <path d="M60 60 H120 V80 H80 V100 H140 V140 H60 V100 H100 V60 Z" fill="none" stroke="#000000"
+                stroke-width="8" />
+
               <!-- Nodo centrale (opzionale) -->
               <circle cx="100" cy="100" r="5" fill="#FF0000" />
             </svg>
-            
+
             <span> Maze Brain</span>
           </button>
         </div>
@@ -92,7 +92,22 @@
 
       </div>
       <div id="spacerun" class="game-screen world hidden">
-
+        <div id="overlay-controller" class="overlay-controller hidden">
+          <div id="game-controls" class="keyboard-layout">
+            <button id="obstacle" class="control-button-space">
+              Ostacoli
+            </button>
+            <button id="supermanmode" class="control-button-space">
+              Superman
+            </button>
+            <button id="ghost" class="control-button-space">
+              Fantasma
+            </button>
+          </div>
+        </div>
+        <div class="face-info">
+          <div id="face-detection-info">centro</div>
+        </div>
       </div>
       <div id="doughnut" class="game-screen world hidden">
 
@@ -100,6 +115,7 @@
       <div id="maze" class="game-screen world hidden">
 
       </div>
+
     </main>
     <footer class="footer">
 
@@ -112,12 +128,13 @@
             <button id="btnRight" class="control-button">➡️</button>
           </div>
           <div class="row">
-            <button id="btnD" class="control-button">D</button>
+            <button id="btnDifHigh" class="control-button"></button>
             <button id="btnDown" class="control-button">⬇️</button>
-            <button id="btnPause" class="control-button">P</button>
+            <button id="btnPause" class="control-button active">P</button>
 
           </div>
           <div class="row">
+            <button id="btnDifLow" class="control-button"></button>
             <button id="btnStop" class="control-button">⏺️</button>
             <button id="btnF" class="control-button">F</button>
           </div>

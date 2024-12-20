@@ -4,20 +4,36 @@ export type FaceDetectionProp = {
     videoElement: HTMLVideoElement;
     videoArea: HTMLElement
 }
+type MoveDetectType = 'center' | 'right' | 'left';
+export type FaceController = { 
+    right: () => void; 
+    left: () => void;
+    center: () =>  void;
+    up: () => void; 
+    down: () => void; 
+}
 export class StarFaceDetection {
 
     videoElement: HTMLVideoElement;
     videoArea: HTMLElement;
+    info: HTMLElement;
     showFace: boolean = false;
+    faceController?: FaceController;
+    moveDetectType: MoveDetectType = 'center';
+
     constructor() {
         this.videoElement = document.getElementById('videoElement') as HTMLVideoElement;
         this.videoArea = document.getElementById('video-area');
-
+        this.info = document.getElementById('face-detection-info');
         if (this.videoElement) {
             this.videoElement.width = this.videoArea.clientWidth;
             this.videoElement.height = this.videoArea.clientHeight;
         }
     }
+
+    onController(arg0: FaceController) {
+		this.faceController = arg0;
+	}
 
     public updateShowFace(showFace: boolean) {
         this.showFace = showFace;
@@ -31,6 +47,11 @@ export class StarFaceDetection {
         });
         this.videoElement.srcObject = stream;
         await this.videoElement.play();
+    }
+
+    updateInfo(value: string) {
+        if (this.info)
+            this.info.innerHTML = value
     }
 
     load() {
@@ -64,13 +85,18 @@ export class StarFaceDetection {
         }, 100)
     }
     detectMovement() {
+
         let lastCenterX: number | null = null;
         let lastCenterY: number | null = null;
+        
         console.log("play")
+        
         const canvas = faceapi.createCanvasFromMedia(this.videoElement);
         canvas.classList.add('canvas-identity');
+        
         this.videoArea.append(canvas);
         const displaySize = { width: this.videoElement.width, height: this.videoElement.height }
+        
         faceapi.matchDimensions(canvas, displaySize)
         const canvasCtx = canvas.getContext('2d');
 
@@ -80,8 +106,8 @@ export class StarFaceDetection {
         const horizontalThreshold = 50;
 
         // Stessa logica per l’asse verticale (per centro, alto, basso), se necessario.
-        const centerLineY = displaySize.height / 2;
-        const verticalThreshold = 50;
+        // const centerLineY = displaySize.height / 2;
+        // const verticalThreshold = 50;
 
         setInterval(async () => {
             const detections = await faceapi
@@ -95,15 +121,15 @@ export class StarFaceDetection {
             canvasCtx.save();
             canvasCtx.translate(canvas.width, 0);
             canvasCtx.scale(-1, 1);
-
+            
             const lineX = this.drawTwoVerticalLine(canvas, canvasCtx);
+
             // this.drawCenterLine(canvasCtx, centerLineX, displaySize);
             if (this.showFace) {
                 faceapi.draw.drawDetections(canvas, resizedDetections);
                 faceapi.draw.drawFaceLandmarks(canvas, resizedDetections);
                 faceapi.draw.drawFaceExpressions(canvas, resizedDetections);
             }
-
 
             // ({ lastCenterX, lastCenterY } = this.centerLeftRightUpDown(resizedDetections, centerLineX, centerLineY, horizontalThreshold, verticalThreshold, lastCenterX, lastCenterY));
             // Supponiamo che stiamo rilevando solo un volto.
@@ -115,25 +141,22 @@ export class StarFaceDetection {
 
             canvasCtx.restore();
 
-
         }, 100);
-
     }
     /**
      * 
      * @param canvas 
      * @param canvasCtx 
      */
-    private drawTwoVerticalLine(canvas: HTMLCanvasElement, canvasCtx: CanvasRenderingContext2D):
-     { line1X: number, line2X: number} {
+    private drawTwoVerticalLine(canvas: HTMLCanvasElement, canvasCtx: CanvasRenderingContext2D): { line1X: number, line2X: number } {
 
         // Calcoliamo le posizioni delle linee divisorie in base al mirroring.
         // Se vogliamo una divisione in tre parti da sinistra a destra, 
         // dopo il mirroring dobbiamo invertire la logica delle coordinate:
 
-        const line1X = 2 * canvas.width / 3; // apparirà a 1/3 da sinistra, visivamente
-        const line2X = canvas.width / 3; // apparirà a 2/3 da sinistra, visivamente
-
+        const line1X = canvas.width / 3; // apparirà a 1/3 da sinistra, visivamente
+        const line2X = 2 * canvas.width / 3; // apparirà a 2/3 da sinistra, visivamente
+        // console.log(line1X, line2X)
 
         // Disegniamo le linee
         canvasCtx.beginPath();
@@ -152,7 +175,7 @@ export class StarFaceDetection {
     }
 
     private leftRightRedLine(
-        lineX: { line1X: number, line2X: number},
+        lineX: { line1X: number, line2X: number },
         canvasCtx: CanvasRenderingContext2D,
         resizedDetections: faceapi.WithFaceExpressions<
             faceapi.WithFaceLandmarks<{ detection: faceapi.FaceDetection; },
@@ -164,7 +187,7 @@ export class StarFaceDetection {
         horizontalThreshold: number,
         percentageThreshold: number
     ) {
-            const {line1X, line2X} = lineX;
+        const { line1X, line2X } = lineX;
         if (resizedDetections.length > 0) {
             const face = resizedDetections[0];
             const box = face.detection.box;
@@ -172,7 +195,7 @@ export class StarFaceDetection {
             const faceCenterY = box.y + box.height / 2;
 
             // Definiamo dimensioni del quadrato, ad esempio 100x100 px
-            const rectSize = 100;
+            const rectSize = 70;
             const rectX = faceCenterX - rectSize / 2;
             const rectY = faceCenterY - rectSize / 2;
 
@@ -186,42 +209,53 @@ export class StarFaceDetection {
             lastCenterY = faceCenterY;
 
             // Calcolo sovrapposizione con le tre zone
-        // Zone:
-        // Sinistra: [0, line1X]
-        // Centro:   [line1X, line2X]
-        // Destra:   [line2X, canvas.width]
+            // Zone:
+            // Sinistra: [0, line1X]
+            // Centro:   [line1X, line2X]
+            // Destra:   [line2X, canvas.width]
 
-        const rectStart = rectX;
-        const rectEnd = rectX + rectSize;
+            const rectStart = rectX;
+            const rectEnd = rectX + rectSize;
 
-        function overlap(aStart: number, aEnd: number, bStart: number, bEnd: number): number {
-            return Math.max(0, Math.min(aEnd, bEnd) - Math.max(aStart, bStart));
-        }
+            function overlap(aStart: number, aEnd: number, bStart: number, bEnd: number): number {
+                return Math.max(
+                        0, 
+                        Math.min(aEnd, bEnd) - Math.max(aStart, bStart)
+                    );
+            }
+            const overlapLeft = overlap(rectStart, rectEnd, 0, line1X);
+            const overlapCenter = overlap(rectStart, rectEnd, line1X, line2X);
+            const overlapRight = overlap(rectStart, rectEnd, line2X, canvasCtx.canvas.width);
 
-        const overlapLeft = overlap(rectStart, rectEnd, 0, line1X);
-        const overlapCenter = overlap(rectStart, rectEnd, line1X, line2X);
-        const overlapRight = overlap(rectStart, rectEnd, line2X, canvasCtx.canvas.width);
+            const ratioLeft = (overlapLeft / rectSize) * 100;
+            const ratioCenter = (overlapCenter / rectSize) * 100;
+            const ratioRight = (overlapRight / rectSize) * 100;
 
-        const ratioLeft = (overlapLeft / rectSize) * 100;
-        const ratioCenter = (overlapCenter / rectSize) * 100;
-        const ratioRight = (overlapRight / rectSize) * 100;
-        console.log(ratioLeft,
-            ratioCenter,
-            ratioRight)
-        // Controllo se c'è una zona che supera la soglia di copertura
-        if (ratioLeft >= percentageThreshold) {
-            console.log("La faccia è prevalentemente nella zona SINISTRA.", ratioLeft);
-        } else if (ratioRight >= percentageThreshold) {
-            console.log("La faccia è prevalentemente nella zona DESTRA.", ratioRight);
-        } else if (ratioCenter >= percentageThreshold) {
-            console.log("La faccia è prevalentemente nella zona CENTRALE.", ratioCenter);
+            // Controllo se c'è una zona che supera la soglia di copertura
+            if (ratioLeft >= percentageThreshold) {
+                if (this.moveDetectType !== 'right')
+                    this.faceController?.right();
+                this.moveDetectType = 'right';
+
+                this.updateInfo('right');
+
+            } else if (ratioRight >= percentageThreshold) {
+                if (this.moveDetectType !== 'left')
+                    this.faceController?.left();
+                this.moveDetectType = 'left';
+                this.updateInfo('left');
+            } else if (ratioCenter >= percentageThreshold) {
+                if (this.moveDetectType !== 'center')
+                    this.faceController?.center();
+                this.moveDetectType = 'center';
+                this.updateInfo('center');
+            } else {
+                // Nessuna zona supera la soglia, la faccia è "mista" tra zone.
+                // Puoi decidere come gestire questo caso.
+                // console.log("La faccia non è chiaramente in una singola zona con la soglia richiesta.");
+            }
         } else {
-            // Nessuna zona supera la soglia, la faccia è "mista" tra zone.
-            // Puoi decidere come gestire questo caso.
-            console.log("La faccia non è chiaramente in una singola zona con la soglia richiesta.");
-        }
-        } else {
-            console.log("Nessun volto rilevato.");
+            // console.log("Nessun volto rilevato.");
         }
         return { lastCenterX, lastCenterY };
     }

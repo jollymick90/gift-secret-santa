@@ -22,6 +22,8 @@ export function runArcadeControl() {
     const scoreHtml = document.getElementById('score');
     const msgHtml = document.getElementById('msg');
     const indoPointHtml = document.getElementById('info-point');
+    const overlayControllerHTML = document.getElementById('overlay-controller');
+    const btnOKHtml = document.getElementById('btnOK');
 
     function handleGameOne() {
         console.log("click game 1");
@@ -69,7 +71,7 @@ export function runArcadeControl() {
         const btnUp = document.getElementById('btnUp');
         const btnPause = document.getElementById('btnPause');
         const btnF = document.getElementById('btnF');
-        const btnD = document.getElementById('btnD');
+        // const btnD = document.getElementById('btnD');
 
         if (worldSpacerun) {
             game = new Game({
@@ -84,9 +86,21 @@ export function runArcadeControl() {
                     }
                 }
             });
-            game.init();
-            game.setOnPause(() => { });
-            game.setOnResume(() => { });
+            game.startEngine();
+            game.setOnPause(() => { 
+                console.log("pause")
+                btnPause?.classList.add('active')
+            });
+            game.setOnResume(() => { 
+                btnPause?.classList.remove('active')
+            });
+            game.setFaceDetectionModeActive((active: boolean) => {
+                if (active) {
+                    btnF?.classList.add('active');
+                } else {
+                    btnF?.classList.remove('active');
+                }
+            })
             game.setOnCollisionDetected((
                 props
             ) => {
@@ -102,12 +116,13 @@ export function runArcadeControl() {
                     scoreHtml.innerHTML = `${score}`;
                 }
             })
+            overlayControllerHTML?.classList.remove('hidden');
+            btnOKHtml?.addEventListener('click', game.clickOK.bind(game));
             btnLeft?.addEventListener('click', game.clickLeft.bind(game));
             rightLeft?.addEventListener('click', game.clickRight.bind(game));
             btnUp?.addEventListener('click', game.clickUp.bind(game));
             btnPause?.addEventListener('click', game.clickPause.bind(game));
             btnF?.addEventListener('click', game.clickF.bind(game))
-            btnD?.addEventListener('click', game.clickD.bind(game))
             btnStop.addEventListener('click', () => {
                 location.reload()
             });
