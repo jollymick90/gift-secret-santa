@@ -20,6 +20,8 @@ export class StarFaceDetection {
     showFace: boolean = false;
     faceController?: FaceController;
     moveDetectType: MoveDetectType = 'center';
+    stream_width: number = 0;
+    stream_height: number = 0;
 
     constructor() {
         this.videoElement = document.getElementById('videoElement') as HTMLVideoElement;
@@ -43,9 +45,24 @@ export class StarFaceDetection {
     async startCamera() {
         console.log("start")
         const stream = await navigator.mediaDevices.getUserMedia({
-            video: true
+            video: {
+                width: { exact: this.videoArea.clientWidth },
+                height: { exact: this.videoArea.clientHeight },
+                // aspectRatio: 0.05
+            }
         });
         this.videoElement.srcObject = stream;
+        let stream_settings = stream.getVideoTracks()[0].getSettings();
+
+        // actual width & height of the camera video
+        this.stream_width = stream_settings.width;
+        this.stream_height = stream_settings.height;
+    
+        console.log('Width: ' + this.stream_width + 'px');
+        console.log('Height: ' + this.stream_height + 'px');
+
+        this.videoArea.setAttribute('width', this.stream_width + 'px');
+        this.videoArea.setAttribute('height', this.stream_height + 'px');
         await this.videoElement.play();
     }
 
@@ -62,12 +79,13 @@ export class StarFaceDetection {
             faceapi.nets.faceRecognitionNet.loadFromUri(url),
             faceapi.nets.faceExpressionNet.loadFromUri(url)
         ]).then(this.startCamera.bind(this))
-            .then(() => {
+            .then((el) => {
+                console.log(el)
                 this.detectMovement();
             })
             .catch((err) => console.error(err))
     }
-    defaultDetectionFace() {
+    private defaultDetectionFace() {
         console.log("play")
         const canvas = faceapi.createCanvasFromMedia(this.videoElement);
         canvas.classList.add('canvas-identity');
@@ -76,15 +94,19 @@ export class StarFaceDetection {
         faceapi.matchDimensions(canvas, displaySize)
 
         setInterval(async () => {
-            const detections = await faceapi.detectAllFaces(this.videoElement, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks().withFaceExpressions()
+            const detections = await faceapi.detectAllFaces(
+                this.videoElement, 
+                new faceapi.TinyFaceDetectorOptions()
+            ).withFaceLandmarks();
+            //.withFaceExpressions()
             const resizedDetections = faceapi.resizeResults(detections, displaySize)
             canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height)
             faceapi.draw.drawDetections(canvas, resizedDetections)
             faceapi.draw.drawFaceLandmarks(canvas, resizedDetections)
-            faceapi.draw.drawFaceExpressions(canvas, resizedDetections)
+            // faceapi.draw.drawFaceExpressions(canvas, resizedDetections)
         }, 100)
     }
-    detectMovement() {
+    private detectMovement() {
 
         let lastCenterX: number | null = null;
         let lastCenterY: number | null = null;
@@ -92,10 +114,14 @@ export class StarFaceDetection {
         console.log("play")
         
         const canvas = faceapi.createCanvasFromMedia(this.videoElement);
+        
         canvas.classList.add('canvas-identity');
         
         this.videoArea.append(canvas);
-        const displaySize = { width: this.videoElement.width, height: this.videoElement.height }
+        const displaySize = { 
+            width: this.stream_width, 
+            height: this.stream_height
+         }
         
         faceapi.matchDimensions(canvas, displaySize)
         const canvasCtx = canvas.getContext('2d');
@@ -279,8 +305,6 @@ export class StarFaceDetection {
         canvasCtx.strokeStyle = "#FF0000";
         canvasCtx.lineWidth = 2;
         canvasCtx.stroke();
-
-
     }
 
     private leftRightUpDown(resizedDetections: faceapi.WithFaceExpressions<faceapi.WithFaceLandmarks<{ detection: faceapi.FaceDetection; }, faceapi.FaceLandmarks68>>[], lastCenterX: number, lastCenterY: number) {
