@@ -95,11 +95,11 @@ export function runArcadeControl() {
                 btnPause?.classList.remove('active')
             });
             game.setFaceDetectionModeActive((active: boolean) => {
-                if (active) {
-                    btnF?.classList.add('active');
-                } else {
-                    btnF?.classList.remove('active');
-                }
+                // if (active) {
+                //     btnF?.classList.add('active');
+                // } else {
+                //     btnF?.classList.remove('active');
+                // }
             })
             game.setOnCollisionDetected((
                 props

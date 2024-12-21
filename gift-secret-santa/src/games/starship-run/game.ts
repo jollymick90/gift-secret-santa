@@ -2,7 +2,7 @@ import * as THREE from 'three';
 
 import { Asteroid } from './asteroid';
 import { Character } from './character';
-import { ArrowLeft, ArrowRight, ArrowUp, gapProbability, GroundSegmentSize, KeyD, KeyF, KeyP, OKClicked, pieceStreet, spaceJump, stringThanks } from './constant';
+import { ArrowLeft, ArrowRight, ArrowUp, FaceControlBTN, gapProbability, GroundSegmentSize, KeyD, KeyF, KeyP, OKClicked, pieceStreet, spaceJump, stringThanks } from './constant';
 import { GameObject } from './game.model';
 import { Tree } from './tree';
 import { StarFaceDetection } from './face-detection';
@@ -34,6 +34,7 @@ export class Game {
 	private obstacleBtn: HTMLElement;
 	private supermanmodeBtn: HTMLElement;
 	private ghostBtn: HTMLElement;
+	private faceControlBtn: HTMLElement;
 	private scene: any;
 	private camera: any;
 	private character: any;
@@ -160,6 +161,10 @@ export class Game {
 	}
 	public clickF() {
 		this.handleKeyPress(KeyF);
+	}
+
+	public clickFaceControlBTN() {
+		this.handleKeyPress(FaceControlBTN);
 	}
 
 	public clickD() {
@@ -303,6 +308,13 @@ export class Game {
 			this.updateGhostBtnState();
 		});
 
+		this.faceControlBtn = document.getElementById('FaceControlBTN');
+		this.faceControlBtn?.addEventListener('click', () => {
+
+			this.clickFaceControlBTN();
+			this.updateFaceControlBtnState();
+		});
+
 		this.starFaceDetection.onController({
 			right: () => {
 				if (this.faceControllerEnabled)
@@ -324,28 +336,65 @@ export class Game {
 		this.updateSupermanBtnState();
 
 		this.updateGhostBtnState();
+
+		this.updateFaceControlBtnState();
+	}
+
+	private updateFaceControlBtnState() {
+		if (this.faceControllerEnabled) {
+			this.faceControlBtn?.classList.add('active');
+			this._output({
+				msg: ["hai attivato il controllo con la faccia"]
+			})
+		} else {
+			this.faceControlBtn?.classList.remove('active');
+
+			this._output({
+				msg: ["hai disattivato il controllo con la faccia"]
+			})
+		}
 	}
 
 	private updateGhostBtnState() {
-		if (this.ghostMode)
+		if (this.ghostMode) {
 			this.ghostBtn?.classList.add('active');
-		else
+			this._output({
+				msg: ["Ora puoi passare attraverso gli ostacoli"]
+			})
+		} else {
 			this.ghostBtn?.classList.remove('active');
+			this._output({
+				msg: ["Ora devi schivare o saltare gli ostacoli"]
+			})
+		}
 	}
 
 	private updateSupermanBtnState() {
-		if (this.supermanMode)
+		if (this.supermanMode) {
 			this.supermanmodeBtn?.classList.add('active');
-		else
+			this._output({
+				msg: ["Ora puoi volare sopra i fossi"]
+			})
+		} else {
 			this.supermanmodeBtn?.classList.remove('active');
+			this._output({
+				msg: ["Ora devi saltare i fossi"]
+			})
+		}
 	}
 
 	private updateObstacleBtnState() {
-		if (this.enableCollisionObject)
+		if (this.enableCollisionObject) {
 			this.obstacleBtn?.classList.add('active');
-		else
+			this._output({
+				msg: ["Beh! li vedi gli ostacoli, quindi è chiaro!"]
+			})
+		} else {
 			this.obstacleBtn?.classList.remove('active');
-
+			this._output({
+				msg: ["Puff! non ci sono più gli ostacoli"]
+			})
+		}
 		if (this.enableCollisionObject && this.objects.length === 0) {
 			this.createInitialCollisionObject();
 		}
@@ -719,10 +768,15 @@ export class Game {
 		}
 		if (key === KeyF) {
 
-			// this.showFace = !this.showFace;
-			// this.starFaceDetection.updateShowFace(this.showFace);
+			this.showFace = !this.showFace;
+			this.starFaceDetection.updateShowFace(this.showFace);
+			return;
+		}
+
+		if (key === FaceControlBTN) {
 			this.faceControllerEnabled = !this.faceControllerEnabled;
 			this.onFaceDetectionMode(this.faceControllerEnabled);
+			return;
 		}
 	}
 

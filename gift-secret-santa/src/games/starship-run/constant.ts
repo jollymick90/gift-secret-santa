@@ -22,6 +22,7 @@ export const spaceJump = 20;
 export const gapProbability = 0.15;
 export const stringThanks = "We thank Wan Fung Chui for the inspiration."
 export const OKClicked = 1000;
+export const FaceControlBTN = 1002;
 export const ArrowLeft = 37;
 export const ArrowUp = 38;
 export const ArrowRight = 39;
