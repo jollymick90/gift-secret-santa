@@ -9,8 +9,6 @@ import {
 } from '../../assets';
 import { generateSquareMaze } from './maze';
 
-// import { Box2D } from '../../vendor';
-
 declare var Box2D: any;
 declare var jQuery: any;
 declare var $: any;
@@ -48,9 +46,9 @@ export function MazeBrain(
         ballMesh = undefined,
         ballRadius = 0.25,
         keyAxis = [0, 0],
-        ironTexture = new THREE.TextureLoader().load(window.location.href + ballUrl),
-        planeTexture = new THREE.TextureLoader().load(window.location.href + concreteUrl),
-        brickTexture = new THREE.TextureLoader().load(window.location.href + brickUrl),
+        ironTexture = new THREE.TextureLoader().load(ballUrl),
+        planeTexture = new THREE.TextureLoader().load(concreteUrl),
+        brickTexture = new THREE.TextureLoader().load(brickUrl),
         gameState = undefined,
 
         // Box2D shortcuts

@@ -85,39 +85,10 @@ export function DoughnutStars({
 
     // Configura la webcam
     const videoElement: any = document.getElementById('videoElement');
-    // videoElement.classList.add('hidden');
-    // videoElement.classList.add('camera');
     const videoArea = document.getElementById('video-area');
     if (videoElement) {
         videoElement.width = videoArea.clientWidth;
         videoElement.height = videoArea.clientHeight;
-    }
-
-    // videoArea.appendChild(videoElement);
-
-    const canvasOverlay: any = document.getElementById('canvasOverlay');
-    const ctx = canvasOverlay?.getContext('2d');
-
-    // Funzione per calcolare il riquadro di delimitazione della mano
-    function getBoundingBox(landmarks) {
-        let xMin = Infinity, xMax = -Infinity, yMin = Infinity, yMax = -Infinity;
-
-        for (const landmark of landmarks) {
-            const x = landmark.x * canvasOverlay.width;
-            const y = landmark.y * canvasOverlay.height;
-
-            if (x < xMin) xMin = x;
-            if (x > xMax) xMax = x;
-            if (y < yMin) yMin = y;
-            if (y > yMax) yMax = y;
-        }
-
-        return {
-            x: xMin,
-            y: yMin,
-            width: xMax - xMin,
-            height: yMax - yMin,
-        };
     }
 
     async function startCamera() {
@@ -160,7 +131,7 @@ export function DoughnutStars({
             const y = (0.5 - wrist.y) * 20; // Trasforma la posizione da -10 a 10
             //console.log("old",player.position.x , player.position.y, "new", x,y)
             // Aggiorna la posizione della sfera basata sul movimento della mano
-            player.position.x = x;
+            player.position.x = -x;
             player.position.y = y;
 
             // ctx.strokeStyle = 'red';
