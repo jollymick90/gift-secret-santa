@@ -7,12 +7,16 @@ import {
   brickUrl,
   concreteUrl,
 } from '../../assets';
+import { StarFaceDetection } from '../../utils/face-detection';
 import { generateSquareMaze } from './maze';
 
-declare var Box2D: any;
-declare var jQuery: any;
-declare var $: any;
-declare var KeyboardJS: any;
+declare const Box2D: any;
+declare const jQuery: any;
+declare const $: any;
+
+type GenerateMazeMeshProp = {
+    dimension: number, [key: number]: number[]
+}
 
 export function MazeBrain(
     _element: HTMLElement,
@@ -21,8 +25,8 @@ export function MazeBrain(
     let triggerTouch = 0;
     const speedTouch = 10;
     const element = _element;
-    let g: any;
-    let m: any;
+    let ballSphereGeom: any;
+    let ballMeshPhongMaterial: any;
     let wh: any;
     let h: any;
     let ww: any;
@@ -32,20 +36,19 @@ export function MazeBrain(
     let moveDownStart = false;
     let moveRighStart = false;
     let moveLeftStart = false;
+    let faceControllerEnabled = false;
 
-    var camera = undefined,
+    let camera = undefined,
         scene = undefined,
         renderer = undefined,
         light = undefined,
-        mouseX = undefined,
-        mouseY = undefined,
         maze = undefined,
         mazeMesh = undefined,
-        mazeDimension = 11,
+        mazeDimension: number = 11,
         planeMesh = undefined,
         ballMesh = undefined,
-        ballRadius = 0.25,
-        keyAxis = [0, 0],
+        ballRadius: number = 0.25,
+        keyAxis: number[] = [0, 0],
         ironTexture = new THREE.TextureLoader().load(ballUrl),
         planeTexture = new THREE.TextureLoader().load(concreteUrl),
         brickTexture = new THREE.TextureLoader().load(brickUrl),
@@ -61,21 +64,36 @@ export function MazeBrain(
         b2Settings = Box2D.Common.b2Settings,
         b2Vec2 = Box2D.Common.Math.b2Vec2,
 
-        // Box2D world variables 
+        // Box2D world constiables 
         wWorld = undefined,
         wBall = undefined;
 
+    const starFaceDetection = new StarFaceDetection();
 
+    const faceControlBtn = document.getElementById('MazeFaceControlBTN');
+    faceControlBtn?.addEventListener('click', () => {
+        clickFaceControllerBtn();
+        updateFaceControlBtnState();        
+    });
+
+    function updateFaceControlBtnState() {
+        if (faceControllerEnabled) {
+            faceControlBtn?.classList.add('active');
+        } else {
+            faceControlBtn?.classList.remove('active');
+        }
+    }
+    
     function createPhysicsWorld() {
         // Create the world object.
         wWorld = new b2World(new b2Vec2(0, 0), true);
 
         // Create the ball.
-        var bodyDef = new b2BodyDef();
+        const bodyDef = new b2BodyDef();
         bodyDef.type = b2Body.b2_dynamicBody;
         bodyDef.position.Set(1, 1);
         wBall = wWorld.CreateBody(bodyDef);
-        var fixDef = new b2FixtureDef();
+        const fixDef = new b2FixtureDef();
         fixDef.density = 1.0;
         fixDef.friction = 0.0;
         fixDef.restitution = 0.25;
@@ -86,8 +104,8 @@ export function MazeBrain(
         bodyDef.type = b2Body.b2_staticBody;
         fixDef.shape = new b2PolygonShape();
         fixDef.shape.SetAsBox(0.5, 0.5);
-        for (var i = 0; i < maze.dimension; i++) {
-            for (var j = 0; j < maze.dimension; j++) {
+        for (let i = 0; i < maze.dimension; i++) {
+            for (let j = 0; j < maze.dimension; j++) {
                 if (maze[i][j]) {
                     bodyDef.position.x = i;
                     bodyDef.position.y = j;
@@ -97,7 +115,7 @@ export function MazeBrain(
         }
     }
 
-    function generate_maze_mesh(field: { dimension: number, [key: number]: number[] }) {
+    function generate_maze_mesh(field: GenerateMazeMeshProp) {
         const geometries: THREE.BufferGeometry[] = []; // Array to hold individual geometries
 
         const geometry = new THREE.BoxGeometry(1, 1, 1); // Base geometry for each cube
@@ -139,14 +157,14 @@ export function MazeBrain(
         scene.add(light);
 
         // Add the ball.
-        g = new THREE.SphereGeometry(ballRadius, 32, 16);
-        m = new THREE.MeshPhongMaterial({ map: ironTexture });
-        ballMesh = new THREE.Mesh(g, m);
+        ballSphereGeom = new THREE.SphereGeometry(ballRadius, 32, 16);
+        ballMeshPhongMaterial = new THREE.MeshPhongMaterial({ map: ironTexture });
+        ballMesh = new THREE.Mesh(ballSphereGeom, ballMeshPhongMaterial);
         ballMesh.position.set(1, 1, ballRadius);
         scene.add(ballMesh);
 
         // Add the camera.
-        var aspect = window.innerWidth / window.innerHeight;
+        const aspect = window.innerWidth / window.innerHeight;
         camera = new THREE.PerspectiveCamera(60, aspect, 1, 1000);
         camera.position.set(1, 1, 5);
         scene.add(camera);
@@ -156,11 +174,11 @@ export function MazeBrain(
         scene.add(mazeMesh);
 
         // Add the ground.
-        g = new THREE.PlaneGeometry(mazeDimension * 10, mazeDimension * 10, mazeDimension, mazeDimension);
+        ballSphereGeom = new THREE.PlaneGeometry(mazeDimension * 10, mazeDimension * 10, mazeDimension, mazeDimension);
         planeTexture.wrapS = planeTexture.wrapT = THREE.RepeatWrapping;
         planeTexture.repeat.set(mazeDimension * 5, mazeDimension * 5);
-        m = new THREE.MeshPhongMaterial({ map: planeTexture });
-        planeMesh = new THREE.Mesh(g, m);
+        ballMeshPhongMaterial = new THREE.MeshPhongMaterial({ map: planeTexture });
+        planeMesh = new THREE.Mesh(ballSphereGeom, ballMeshPhongMaterial);
         planeMesh.position.set((mazeDimension - 1) / 2, (mazeDimension - 1) / 2, 0);
         planeMesh.rotation.set(Math.PI / 2, 0, 0);
         scene.add(planeMesh);
@@ -171,12 +189,12 @@ export function MazeBrain(
     function updatePhysicsWorld() {
 
         // Apply "friction". 
-        var lv = wBall.GetLinearVelocity();
+        const lv = wBall.GetLinearVelocity();
         lv.Multiply(0.95);
         wBall.SetLinearVelocity(lv);
 
         // Apply user-directed force.
-        var f = new b2Vec2(keyAxis[0] * wBall.GetMass() * 0.25 * 8, keyAxis[1] * wBall.GetMass() * 0.25 * 8);
+        const f = new b2Vec2(keyAxis[0] * wBall.GetMass() * 0.25 * 8, keyAxis[1] * wBall.GetMass() * 0.25 * 8);
         wBall.ApplyImpulse(f, wBall.GetPosition());
         keyAxis = [0, 0];
 
@@ -188,13 +206,13 @@ export function MazeBrain(
     function updateRenderWorld() {
 
         // Update ball position.
-        var stepX = wBall.GetPosition().x - ballMesh.position.x;
-        var stepY = wBall.GetPosition().y - ballMesh.position.y;
+        const stepX = wBall.GetPosition().x - ballMesh.position.x;
+        const stepY = wBall.GetPosition().y - ballMesh.position.y;
         ballMesh.position.x += stepX;
         ballMesh.position.y += stepY;
 
         // Update ball rotation.
-        var tempMat = new THREE.Matrix4();
+        let tempMat = new THREE.Matrix4();
         tempMat.makeRotationAxis(new THREE.Vector3(0, 1, 0), stepX / ballRadius);
         tempMat.multiply(ballMesh.matrix);
         ballMesh.matrix = tempMat;
@@ -226,7 +244,7 @@ export function MazeBrain(
                 camera.position.set(1, 1, 5);
                 light.position.set(1, 1, 1.3);
                 light.intensity = 0;
-                var level = Math.floor((mazeDimension - 1) / 2 - 4);
+                const level = Math.floor((mazeDimension - 1) / 2 - 4);
                 // $('#level').html('Level ' + level);
                 output({
                     msg: ['Level ' + level]
@@ -249,8 +267,8 @@ export function MazeBrain(
                 renderer.render(scene, camera);
 
                 // Check for victory.
-                var mazeX = Math.floor(ballMesh.position.x + 0.5);
-                var mazeY = Math.floor(ballMesh.position.y + 0.5);
+                const mazeX = Math.floor(ballMesh.position.x + 0.5);
+                const mazeY = Math.floor(ballMesh.position.y + 0.5);
                 if (mazeX == mazeDimension && mazeY == mazeDimension - 2) {
                     mazeDimension += 2;
                     gameState = 'fade out';
@@ -326,6 +344,9 @@ export function MazeBrain(
     }
 
     function start() {
+    
+        starFaceDetection.load();
+    
         renderer = new THREE.WebGLRenderer();
         renderer.setSize(
             element.clientWidth,
@@ -337,6 +358,22 @@ export function MazeBrain(
 
         gameState = 'initialize';
         requestAnimationFrame(gameLoop);
+
+        starFaceDetection.onController({
+            right: () => {
+                if (faceControllerEnabled) {
+                    clickRight();
+                }
+            },
+            left: () => {
+                if (faceControllerEnabled) {
+                    clickLeft();
+                }
+            },
+            center: () => { },
+			up: () => { },
+			down: () => { }
+        })
     }
 
     function clickLeft() {
@@ -353,6 +390,10 @@ export function MazeBrain(
 
     function clickDown() {
         onMoveKey([0, -1])
+    }
+
+    function clickFaceControllerBtn() {
+        faceControllerEnabled = !faceControllerEnabled;
     }
 
     function touchStartLeft() {
@@ -395,6 +436,7 @@ export function MazeBrain(
         clickRight,
         clickUp,
         clickDown,
+        clickFaceControllerBtn,
         touchStartLeft,
         touchStartight: touchStartRight,
         touchStartckUp,
@@ -402,6 +444,7 @@ export function MazeBrain(
         touchEndLeft,
         touchEndight: touchEndRight,
         touchEndckUp,
-        touchEndDown
+        touchEndDown,
+
     }
 }

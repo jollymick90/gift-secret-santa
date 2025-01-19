@@ -25,6 +25,10 @@ export function runArcadeControl() {
     const overlayControllerHTML = document.getElementById('overlay-controller');
     const btnOKHtml = document.getElementById('btnOK');
 
+    loadBox2D(() =>{
+        console.info("Box2D loaded")
+    })
+
     function handleGameOne() {
         console.log("click game 1");
         homeControls?.classList.add('hidden');

@@ -1,7 +1,7 @@
 let directions: any;
 let dir: any;
 
-export function generateSquareMaze(dimension) {
+export function generateSquareMaze(dimension: number) {
 
     function iterate(field, x, y) {
         field[x][y] = false;

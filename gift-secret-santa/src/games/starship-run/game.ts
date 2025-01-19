@@ -1,12 +1,26 @@
 import * as THREE from 'three';
 
+import { StarFaceDetection } from '../../utils/face-detection';
 import { Asteroid } from './asteroid';
 import { Character } from './character';
-import { ArrowLeft, ArrowRight, ArrowUp, FaceControlBTN, gapProbability, GroundSegmentSize, KeyD, KeyF, KeyP, OKClicked, pieceStreet, spaceJump, stringThanks } from './constant';
+import {
+  ArrowLeft,
+  ArrowRight,
+  ArrowUp,
+  FaceControlBTN,
+  gapProbability,
+  GroundSegmentSize,
+  KeyD,
+  KeyF,
+  KeyP,
+  OKClicked,
+  pieceStreet,
+  spaceJump,
+  stringThanks,
+} from './constant';
 import { GameObject } from './game.model';
-import { Tree } from './tree';
-import { StarFaceDetection } from './face-detection';
 import { GroundSegment } from './groundsegment';
+import { Tree } from './tree';
 
 type RowOfTreeProp = {
 	position: number;
